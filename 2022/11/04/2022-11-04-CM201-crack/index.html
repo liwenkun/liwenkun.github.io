@@ -22,12 +22,12 @@
     var CONFIG = {"hostname":"liwenkun.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":{"disqus":{"order":-2}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":true,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="前言这两天为了破解到期魔百盒看了好多帖子，最终成功破解了。为了让大家少走弯路，只看一篇帖子就能完成破解，我汇总了一下这两天学习到的东西，并分享下我的破解经历，希望对大家有所帮助。 盒子型号首先说下盒子型号是 CM201-2 长虹代工 (CH)，具体信息见图片：  板子上的硬件信息是：CPU 型号是 HI3890MV300，闪存是 emmc。机型编码和牌照方不同应该没太大关系，因为网上那些教程和我的">
+  <meta name="description" content="前言这两天为了破解魔百盒看了好多帖子，费了好大劲，好在最后破解成功了。为了让大家少走弯路，我把破解方法分享出来，希望能有所帮助。 盒子型号我的盒子型号是 CM201-2 长虹代工 (CH)，具体信息见图片：  板子上的硬件信息是：CPU 型号是 HI3890MV300，闪存是 emmc。机型编码和牌照方不同应该没太大关系，大家可以先尝试一下，不行再说。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="移动魔百盒 CM201 CH(长虹代工) 破解方法分享">
 <meta property="og:url" content="https://liwenkun.github.io/2022/11/04/2022-11-04-CM201-crack/index.html">
 <meta property="og:site_name" content="Chance 的博客">
-<meta property="og:description" content="前言这两天为了破解到期魔百盒看了好多帖子，最终成功破解了。为了让大家少走弯路，只看一篇帖子就能完成破解，我汇总了一下这两天学习到的东西，并分享下我的破解经历，希望对大家有所帮助。 盒子型号首先说下盒子型号是 CM201-2 长虹代工 (CH)，具体信息见图片：  板子上的硬件信息是：CPU 型号是 HI3890MV300，闪存是 emmc。机型编码和牌照方不同应该没太大关系，因为网上那些教程和我的">
+<meta property="og:description" content="前言这两天为了破解魔百盒看了好多帖子，费了好大劲，好在最后破解成功了。为了让大家少走弯路，我把破解方法分享出来，希望能有所帮助。 盒子型号我的盒子型号是 CM201-2 长虹代工 (CH)，具体信息见图片：  板子上的硬件信息是：CPU 型号是 HI3890MV300，闪存是 emmc。机型编码和牌照方不同应该没太大关系，大家可以先尝试一下，不行再说。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://liwenkun.github.io/img/in-post/cm201_crack/box-info.jpg">
 <meta property="og:image" content="https://liwenkun.github.io/img/in-post/cm201_crack/board-ttl-connection.jpg">
@@ -44,7 +44,7 @@
 <meta property="og:image" content="https://liwenkun.github.io/img/in-post/cm201_crack/google-tv-splash.jpg">
 <meta property="og:image" content="https://liwenkun.github.io/img/in-post/cm201_crack/home.jpg">
 <meta property="article:published_time" content="2022-11-04T00:00:00.000Z">
-<meta property="article:modified_time" content="2025-10-08T19:05:29.805Z">
+<meta property="article:modified_time" content="2025-11-13T03:54:03.189Z">
 <meta property="article:author" content="Chance">
 <meta property="article:tag" content="折腾">
 <meta name="twitter:card" content="summary">
@@ -251,7 +251,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-10-08 19:05:29" itemprop="dateModified" datetime="2025-10-08T19:05:29+00:00">2025-10-08</time>
+                <time title="修改时间：2025-11-13 03:54:03" itemprop="dateModified" datetime="2025-11-13T03:54:03+00:00">2025-11-13</time>
               </span>
 
           
@@ -267,7 +267,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.6k</span>
+              <span>4.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -286,101 +286,101 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>这两天为了破解到期魔百盒看了好多帖子，最终成功破解了。为了让大家少走弯路，只看一篇帖子就能完成破解，我汇总了一下这两天学习到的东西，并分享下我的破解经历，希望对大家有所帮助。</p>
-<h1 id="盒子型号"><a href="#盒子型号" class="headerlink" title="盒子型号"></a>盒子型号</h1><p>首先说下盒子型号是 CM201-2 长虹代工 (CH)，具体信息见图片：</p>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>这两天为了破解魔百盒看了好多帖子，费了好大劲，好在最后破解成功了。为了让大家少走弯路，我把破解方法分享出来，希望能有所帮助。</p>
+<h1 id="盒子型号"><a href="#盒子型号" class="headerlink" title="盒子型号"></a>盒子型号</h1><p>我的盒子型号是 CM201-2 长虹代工 (CH)，具体信息见图片：</p>
 <p><img src="/img/in-post/cm201_crack/box-info.jpg" alt="盒子信息"></p>
-<p>板子上的硬件信息是：CPU 型号是 HI3890MV300，闪存是 emmc。机型编码和牌照方不同应该没太大关系，因为网上那些教程和我的都不一样，但我也刷机成功了。大家可以先尝试一下，如果不行再说。</p>
+<p>板子上的硬件信息是：CPU 型号是 HI3890MV300，闪存是 emmc。机型编码和牌照方不同应该没太大关系，大家可以先尝试一下，不行再说。</p>
 <span id="more"></span>
-<h1 id="破解方法"><a href="#破解方法" class="headerlink" title="破解方法"></a>破解方法</h1><p>这种盒子有两种破解模式，一种是解除无法安装软件的限制，另一种是是刷第三方系统。两种方式各有利弊，具体如下：<br>第一种破解模式：</p>
+<h1 id="破解方法"><a href="#破解方法" class="headerlink" title="破解方法"></a>破解方法</h1><p>有两种破解方案，一种是保留原有系统，只解除无法安装软件的限制，另一种是是刷第三方系统。两种方式各有利弊：</p>
+<p>第一种：</p>
 <ul>
 <li>优点：步骤简单；</li>
 <li>缺点：<ul>
 <li>如果按到遥控器上的主页，会跳到订阅关系失效的页面，只能重启，比较麻烦，特别是对于那些不会用机顶盒的老人家来说。</li>
-<li>而且原装系统有一堆用不到的应用在后台运行，占用内存，影响运行速度。</li>
+<li>原装系统有一堆用不到的应用在后台运行，占用内存，影响运行速度。</li>
 </ul>
 </li>
 </ul>
-<p>第二种破解模式：</p>
+<p>第二种：</p>
 <ul>
 <li>优点：<ul>
 <li>系统精简，第三方系统一般会把那些没用的系统应用去除掉，运行速度会有所提升；</li>
-<li>不用担心按到主页需要重启盒子的问题，因为第三方系统一般都会解决该问题；</li>
+<li>不用担心按到主页需要重启盒子，第三方系统一般没这个问题；</li>
 </ul>
 </li>
-<li>缺点：刷机步骤稍微复杂。</li>
+<li>缺点：刷机步骤略微复杂。</li>
 </ul>
-<p>这两种破解模式的简单和复杂都是相对而言的，都需要拆机通过 usb 转 ttl 来刷机，如果你想不拆机刷机，那这篇帖子可能对你没啥参考价值。我在网上找的所有的免拆方式都没有成功，包括使用 ZANTI 中间人攻击替换 apk 来安装当贝桌面的，还有通过遥控按键开启 adb 方式刷机的。<br>接下来具体说下这两种刷机模式的步骤。因为涉及到拆机，我把拆机的方法先提前说下：盒子底部有两个垫子，把垫子撕开就能看到螺丝孔了，取下这两个螺丝，然后就可以用指甲、卡片或者其他东西把盒子拆开。</p>
-<h2 id="第一种破解方式"><a href="#第一种破解方式" class="headerlink" title="第一种破解方式"></a>第一种破解方式</h2><ol>
+<p>两种破解模式都需要拆机连电脑，如果你想不拆机，那这篇帖子可能对你没啥参考价值。我在网上找的所有的免拆方法都没有试成功，包括使用 ZANTI 中间人攻击替换 apk 来安装当贝桌面，以及通过遥控按键开启 adb。<br>破解前先要拆机，具体方法是：撕开盒子底部的两个垫子，取下螺丝，再用指甲、卡片等工具把盒子拆开。接下来是具体的破解步骤。</p>
+<h2 id="第一种破解方案"><a href="#第一种破解方案" class="headerlink" title="第一种破解方案"></a>第一种破解方案</h2><ol>
 <li>准备工具：</li>
 </ol>
 <ul>
 <li>U 盘 （大小最好为 8G，文件系统格式化为 fat32）；</li>
-<li>usb 转 ttl 模块（淘宝有售，我买的型号是 CH340G）；</li>
-<li>串口通信工具（windows 上比较知名的有 putty，mac 上有“串口调试助手”，这里以 putty 为例）;</li>
+<li>usb 转 ttl 模块，杜邦线（淘宝有售，我买的型号是 CH340G）；</li>
+<li>串口通信工具（windows 上的 putty，mac 上的“串口调试助手”，这里以 putty 为例）;</li>
 </ul>
 <ol start="2">
-<li><p>破解步骤：<br>将 usb 转 ttl 模块插入到电脑的 usb 口，然后打开 windows 设备管理器，在端口分类里查看这个模块是在哪个 COM 口，我的设备是在 COM4。</p>
-<p>用杜邦线把 CH340G 的 RXD、TXD 和 GND三个引脚接到板子上。板子上的那四个孔第一个孔没用，其他三个孔从左到右分别是 RXD、TXD、GND，分别和 CH340G 的 TXD、RXD、GND 相对应，顺序不能错，如下图所示。有的博主给那三个孔焊上了排插，这样用杜邦线直接插上去就行，如果和我一样，没有其他工具，直接用那三根导线和三个孔保持良好稳定的接触也行。</p>
+<li><p>破解步骤：<br>将 usb 转 ttl 模块插入到电脑的 usb 口，然后打开 windows 设备管理器，在端口分类里查看这个模块是在哪个 COM 口，我的是在 COM4。</p>
+<p>用杜邦线把 CH340G 的 RXD、TXD 和 GND三个引脚接到板子上。板子上有四个孔，第一个孔没用，其他三个孔从左到右分别是 RXD、TXD、GND，分别和 CH340G 的 TXD、RXD、GND 相对应，顺序不能错，如下图所示。有的博主给那三个孔焊上了排插，然后用杜邦线直接插上去就行，如果和我一样没有工具，想办法让三根杜邦线和三个孔保持良好的接触也行。</p>
 <p><img src="/img/in-post/cm201_crack/board-ttl-connection.jpg"></p>
 <p>打开 putty ，如下图所示：</p>
 <p><img src="/img/in-post/cm201_crack/putty.png"></p>
-<p>把通信方式改成串口，Serial line 填写为上面查到的那个，我这里是 COM4，Speed 调整为 115200，Connection type 选择 Serial，其他的不用管，然后点击 右下角的 open，此时会出现一个漆黑的窗口，这个窗口就是用来和盒子进行通信的。打开盒子电源，这时应该能看到窗口上有日志输出：</p>
+<p>把通信方式改成串口，Serial line 填写为上面查到的那个，我这里是 COM4，Speed 调整为 115200，Connection type 选择 Serial，其他的不用管，然后点击 右下角的 open，此时会出现一个控制台窗口，打开盒子电源，这时应该能看到窗口上有日志输出：</p>
 <p><img src="/img/in-post/cm201_crack/putty-shell.png"></p>
-<p>等日志输出差不多完了之后，按下回车键，这时候会显示命令提示符，这样就进入到了设备的 shell 中了（如果没有显示命令提示符，查看那三根线是否接触良好，或者重新配置 putty 并打开窗口）。然后把当贝桌面下载到 U 盘根目录，把 U 盘插入到盒子靠近网口的 usb 口中，按照如下命令进入到 u 盘目录中，执行命令：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /mnt/sda/sda1</span><br><span class="line">pm install 当贝桌面apk文件名</span><br></pre></td></tr></table></figure>
-
-<p>第一行命令是进入 U 盘，第二行命令是安装 U 盘里的当贝桌面。如图所示：</p>
+<p>等日志输出得差不多之后，按下回车键，这时候会显示命令提示符，这样我们就进入到 shell 中了（如果没有显示命令提示符，检查下那三根线是否接触良好，或者重新配置 putty 并打开窗口）。接下来把当贝桌面下载到 U 盘根目录，完后把 U 盘插到盒子靠近网口的 usb 口，执行如下命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">进入 U 盘</span></span><br><span class="line">cd /mnt/sda/sda1</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">安装 U 盘里的当贝桌面</span></span><br><span class="line">pm install 当贝桌面apk文件名</span><br></pre></td></tr></table></figure>
+<p>结果如图：</p>
 <p><img src="/img/in-post/cm201_crack/install-apk.png"></p>
-<p>这一步完了之后应该就装好了。你可以通过</p>
+<p>然后启动当贝桌面：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">am start com.dangbei.tvlauncher</span><br></pre></td></tr></table></figure>
 
-<p>命令直接启动当贝桌面或者重启一下盒子，不出意外的话，启动后就进入当贝桌面了，破解完成。当贝桌面里面可以下载当贝应用市场，然后你就可以安装任意 APP 了。</p>
+<p>如果当贝桌面没出来就重启一下盒子，不出意外的话，重启后就直接进入当贝桌面了，破解完成。当贝桌面里面可以下载当贝应用市场，然后就能安装任意 APP 了。</p>
 </li>
 </ol>
-<h2 id="第二种破解方式"><a href="#第二种破解方式" class="headerlink" title="第二种破解方式"></a>第二种破解方式</h2><ol>
+<h2 id="第二种破解方案"><a href="#第二种破解方案" class="headerlink" title="第二种破解方案"></a>第二种破解方案</h2><ol>
 <li>准备工具：</li>
 </ol>
 <ul>
 <li>U 盘（大小最好为 8G，文件系统格式化为 fat32）；</li>
-<li>usb 转 ttl 模块（淘宝有售，我买的型号是 CH340G）；</li>
-<li>串口通信工具（windows 上比较知名的有 putty，mac 上有“串口调试助手”，这里以 putty 为例）；</li>
-<li>hitool，网上随便搜下就有：<a target="_blank" rel="noopener" href="http://www.winwin7.com/soft/4260.html%E3%80%82">http://www.winwin7.com/soft/4260.html。</a></li>
+<li>usb 转 ttl 模块，杜邦线（淘宝有售，我买的型号是 CH340G）；</li>
+<li>串口通信工具（windows 上的 putty，mac 上的 “串口调试助手”，这里以 putty 为例）；</li>
+<li>hitool，搜关键字 “hitool 下载” 就能找到：<a target="_blank" rel="noopener" href="https://ecoo.top/hitool.htm"></a>。</li>
 </ul>
 <ol>
 <li><p>破解步骤：</p>
-<p>这种破解方式是重刷系统，因为刷机风险比较大，因此建议刷机前先备份下系统，不要怕麻烦，万一失败了呢。备份方法如下：<br>前面的步骤和上面一样：用 CH340G 连接好板子，打开 putty，等日志输出完毕之后，按下回车，进入 shell。然后输入以下命令先进入到分区目录：</p>
+<p>因为刷机风险比较大，建议刷机前先备份下系统，不要怕麻烦，万一失败了呢。备份方法如下：</p>
+<p>前面的步骤和上面一样，用 CH340G 连接好板子，打开 putty，等日志输出完毕之后，按下回车，进入 shell。然后输入以下命令先进入到分区目录：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd /dev/block/platform/soc/by-name</span><br></pre></td></tr></table></figure>
 
-<p>接下来使用以下命令对各个分区进行备份（除了 userdata 分区，其他分区都备份一下）。&#x2F;mnt&#x2F;sda&#x2F;sda1 对应的是 U 盘的根目录，system 是根目录下新建的子目录，这个目录应该是需要提前创建的，否则可能会报错。时间可能会有点久，但是多花点时间也值得，万一刷成砖也有挽救的方法，免得到处求别人要原厂镜像。</p>
+<p>接下来用以下命令对各个分区进行备份（除了 userdata 分区，其他分区都备份一下）。&#x2F;mnt&#x2F;sda&#x2F;sda1 对应的是 U 盘的根目录，system 是根目录下新建的子目录，这个目录需提前创建，否则可能会报错。时间可能会有点久，但是多花点时间也值得，万一刷成砖也有挽救的方法，免得到处求别人要原厂镜像。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">dd if=baseparam of=/mnt/sda/sda1/system/baseparam.img</span><br><span class="line">dd if=bootargs of=/mnt/sda/sda1/system/bootargs.img</span><br><span class="line">dd if=deviceinfo of=/mnt/sda/sda1/system/deviceinfo.img</span><br><span class="line">dd if=fastboot of=/mnt/sda/sda1/system/fastboot.img</span><br><span class="line">dd if=fastplay of=/mnt/sda/sda1/system/fastplay.img</span><br><span class="line">dd if=kernel of=/mnt/sda/sda1/system/kernel.img</span><br><span class="line">dd if=logo of=/mnt/sda/sda1/system/logo.img</span><br><span class="line">dd if=misc of=/mnt/sda/sda1/system/misc.img</span><br><span class="line">dd if=pqparam of=/mnt/sda/sda1/system/pqparam.img</span><br><span class="line">dd if=private of=/mnt/sda/sda1/system/private.img</span><br><span class="line">dd if=recovery of=/mnt/sda/sda1/system/recovery.img</span><br><span class="line">dd if=securestore of=/mnt/sda/sda1/system/securestore.img</span><br><span class="line">dd if=system of=/mnt/sda/sda1/system/system.img</span><br><span class="line">dd if=trustedcore of=/mnt/sda/sda1/system/trustedcore.img</span><br></pre></td></tr></table></figure>
 
-<p>现在轮到 hitool 上场了，这里使用 hitool 的目的是把官方的 recovery 替换成第三方 recovery，这样就能够刷入第三方系统，否则刷机的时候会校验失败，我相信很多人都遇到这个问题。现在我们看看如何刷第三方 recovery。</p>
-<p>保持 CH340G 和盒子的连接，关闭 putty（会和 hitool 冲突）。打开 hitool，选择 HiBurn 视图，如下图所示：</p>
+<p>现在轮到 hitool 上场了，用 hitool 的目的是把官方的 recovery 替换掉，这样刷第三方系统的时候就不会报校验失败的错误，这是很多人刷机失败的原因。</p>
+<p>保持盒子和电脑的连接，关闭 putty（会和 hitool 冲突）。打开 hitool，选择 HiBurn 视图，如图：</p>
 <p><img src="/img/in-post/cm201_crack/hitool-conf.png"></p>
-<p>PC 与板端配置如图所示：串口填 CH340G 所在端口，传输方式选串口，其他的不用管。（有的教程使用的是网口方式，速度会快点，但是需要网线连接，还需要配置 ip 地址，简单起见，我直接使用串口，速度慢一点也还好，毕竟 recovery 分区也不是很大）选择 烧写eMMC 页面，需要填写分区表配置，这个配置我已经写好了，大家可以直接拿来用：</p>
+<p>PC 与板端配置如图所示：串口填 CH340G 所在端口，传输方式选串口，其他的不用管。（有的教程使用的是网口，速度会快点，但是需要网线连接，还需要配置 ip 地址，简单起见，我直接使用串口，速度慢一点也还好，反正 recovery 分区也不是很大）选择 烧写eMMC 页面，这里要填分区表，这个表我已经写好了，大家可以直接拿来用：</p>
 <p><a target="_blank" rel="noopener" href="https://cloud.189.cn/web/share?code=MVNZJzFn2Eb2">CM201-2-CH4_HUNAN分区表文件.xml</a> （访问码：1ift）</p>
-<p>需要注意的是，我这个分区表只适用于这个型号的盒子，其他盒子可能会有一些差异。保险起见大家还是核对一下，万一有不同可以进行修改，具体方法如下：</p>
-<p>还记得连接 putty 的时候会有一堆日志输出吗？这里面就有修改分区表所需的信息：</p>
+<p>这个分区表只适用于我这个型号的盒子，其他盒子可能会有差异。如果你的盒子型号和我的不一样，你可以先导入我的分区表，然后进行修改。还记得连接 putty 的时候会有一堆日志输出吗？这里面就有修改分区表所需的信息：</p>
 <p><img src="/img/in-post/cm201_crack/partition.png"></p>
-<p>红框中的日志描述了每个分区的大小，大家先导入上面的分区表文件，然后把各个分区的长度修改成日志输出所示，大家直接修改长度那一列就行，开始地址会自动更改。如果输出日志中的分区和我的分区表不一样，可以手动添加或者删除，以你盒子的输出日志为准，注意顺序保持一致。</p>
-<p>分区表修改完之后，可以点击保存，这样你就拥有了属于自己盒子的分区表了（备份好这个分区表，以后救砖可能还有用）。接下来就可以导入 recovery 分区，在 recovery 那一行的文件一列，将 recovery 文件导入进去。recovery 我这也准备好了：</p>
+<p>红框中的日志描述了每个分区的大小，大家先导入上面的分区表文件，然后把各个分区的长度修改成日志所示。直接修改长度那一列就行，开始地址会自动更改。如果分区不一样，还需要添加或者删除分区，总之以你自己盒子的日志为准，注意分区顺序和日志中的保持一致。</p>
+<p>修改完分区表之后，可以点击保存，这样你就拥有了属于自己盒子的分区表了（备份好这个分区表，救砖的时候还有用）。接下来导入 recovery 分区：在 recovery 那一行的文件一列，将 recovery 文件导入进去。recovery 我这也准备好了：</p>
 <p><a target="_blank" rel="noopener" href="https://cloud.189.cn/web/share?code=2EjmYjMJzUJj">Hi3798MV300H芯片强刷引导</a> （访问码：ts2l）</p>
-<p>你可能会感到疑惑，我的芯片不是 Hi3789MV300 吗，板子上写的也是这个，为啥这里用的引导是 Hi3789MV300H 的？我最开始用的 recovery 也是 Hi3789MV300 的，但是发现没用，后来才从日志里发现了问题：</p>
+<p>你可能会感到困惑，我的芯片不是 Hi3789MV300 吗，板子上写的也是这个，为啥这里用的引导是 Hi3789MV300H 的？我最开始用的 recovery 也是 Hi3789MV300 的，结果刷机失败，后来才从日志里发现了问题：</p>
 <p><img src="/img/in-post/cm201_crack/cpu-info.png"></p>
-<p>这是 HiBurn 烧写时的日志输出（putty 输出的日志里也有，但我之前忘记截图了，所以用了 HiBurn 里的日志），里面写着 CPU 型号是 Hi3789MV300H。不知道为啥会这样，如果你的日志输出的 CPU 型号是 Hi3789MV300，那你应该使用 Hi3789MV300 的引导：</p>
+<p>这是 HiBurn 烧写 Recovery 时的日志输出（putty 输出的日志里也有，但我之前忘记截图了，所以用了 HiBurn 里的日志），里面写着 CPU 型号是 Hi3789MV300H,不知道为啥会出现这种情况。如果你日志中的 CPU 型号是 Hi3789MV300，那你应该使用 Hi3789MV300 的引导：</p>
 <p><a target="_blank" rel="noopener" href="https://cloud.189.cn/web/share?code=RJn6Fnu2auIb">Hi3798MV300芯片强刷引导</a>  （访问码：bo1f）</p>
-<p>这个文件夹里有三个文件，实测只需要刷 recovery.img 文件就行了，其他两个分区文件不刷也行，如果你失败了，那就按照同样的方法把另外两个对应的分区也刷一下吧。</p>
-<p>recovery 导入完成之后，记得把其他分区取消勾选，只保留 recovery 分区（因为我们只刷 recovery 分区，其他分区暂时不需要，除非你刷成砖了，就需要把之前备份好的分区文件一个一个导进来）。最后点击 烧写，将 recovery 刷到盒子里去：</p>
+<p>这个文件夹里有三个文件，实测只刷 recovery.img 文件就行，如果失败了，那把另外两个也刷一下吧。</p>
+<p>导入 recovery 后，把其他分区取消勾选，只保留 recovery 分区，因为我们只刷 recovery 分区。最后点击 烧写，将 recovery 刷到盒子里去：</p>
 <p><img src="/img/in-post/cm201_crack/pre-flash-recovery.png"></p>
 <p>如果你的盒子通着电，就会出现上面的提示，我们按照提示重新给盒子通电，不出意外的话，就开始烧写了：</p>
 <p><img src="/img/in-post/cm201_crack/flashing-recovery.png"></p>
-<p>左侧输出的是日志，大概等个十几二十分钟就烧好了（如果用网口应该更快）：</p>
+<p>左侧是日志，大概等个十几二十分钟就烧好了（网口应该更快）：</p>
 <p><img src="/img/in-post/cm201_crack/recovery-flashed.png"></p>
-<p>至此，recovery 的刷写工作就完毕了。现在你就可以选择各种刷机包来进行刷机了。我这里准备了一个基于别人的包制作的精简包，去除了其他 app，把巨丑的当贝影视桌面换成了当贝桌面，并且不会出现某些 rom 按主页时当贝桌面等半天或者无法响应的问题。同时还把开机动画改成了 Google TV，逼格一下子就上来了。</p>
+<p>刷完 recovery，就可以尝试刷各种第三方系统了。我这里准备了一个基于别人的包制作的精简包，去除了没用的 app，把巨丑的当贝影视桌面换成了当贝桌面，并且不会出现某些 rom 按主页时当贝桌面等半天或者无法响应的问题。还顺带还把开机动画改成了 Google TV，逼格一下子就上来了。</p>
 <p><a target="_blank" rel="noopener" href="https://cloud.189.cn/web/share?code=M7zm6vn6fuau">自制精简版_当贝桌面_Google_tv_开机动画_文件名改成update.zip</a> （访问码：4qxp）</p>
-<p>把文件改成 update.zip 后放到 U 盘根目录中，插入到靠近网口的那个 usb 口。重新启动盒子电源，然后立刻快速交替按遥控器上的菜单键和音量减键，直到进入 recovery 界面（速度一定要快，不行多试几次）：</p>
+<p>把文件改成 update.zip 后放到 U 盘根目录中，插到靠近网口的那个 usb 口。重启盒子电源，然后立刻快速交替按遥控器上的菜单键和音量减键，直到进入 recovery 界面（速度一定要快，失败就多试几次）：</p>
 <p><img src="/img/in-post/cm201_crack/recovery.jpg"></p>
-<p>选择 本地USB升级，不出意外就开始刷机了，不用多久就刷好了，盒子重启，就能看到如下的开机画面：</p>
+<p>选择 本地USB升级，不出意外就开始刷机了，刷完后盒子重启，就能看到如下的开机画面：</p>
 <p><img src="/img/in-post/cm201_crack/google-tv-splash.jpg"></p>
 <p>欢迎使用 Google TV！</p>
 <p>附一张当贝桌面的图：</p>
@@ -491,7 +491,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%92%E5%AD%90%E5%9E%8B%E5%8F%B7"><span class="nav-number">2.</span> <span class="nav-text">盒子型号</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%A0%B4%E8%A7%A3%E6%96%B9%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">破解方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E7%A7%8D%E7%A0%B4%E8%A7%A3%E6%96%B9%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">第一种破解方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E7%A7%8D%E7%A0%B4%E8%A7%A3%E6%96%B9%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">第二种破解方式</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%92%E5%AD%90%E5%9E%8B%E5%8F%B7"><span class="nav-number">2.</span> <span class="nav-text">盒子型号</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%A0%B4%E8%A7%A3%E6%96%B9%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">破解方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E7%A7%8D%E7%A0%B4%E8%A7%A3%E6%96%B9%E6%A1%88"><span class="nav-number">3.1.</span> <span class="nav-text">第一种破解方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E7%A7%8D%E7%A0%B4%E8%A7%A3%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.</span> <span class="nav-text">第二种破解方案</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
