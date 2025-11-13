@@ -22,12 +22,12 @@
     var CONFIG = {"hostname":"liwenkun.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":{"disqus":{"order":-2}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":true,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="前言这两天为了破解魔百盒看了好多帖子，费了好大劲，好在最后破解成功了。为了让大家少走弯路，我把破解方法分享出来，希望能有所帮助。 盒子型号我的盒子型号是 CM201-2 长虹代工 (CH)，具体信息见图片：  板子上的硬件信息是：CPU 型号是 HI3890MV300，闪存是 emmc。机型编码和牌照方不同应该没太大关系，大家可以先尝试一下，不行再说。">
+  <meta name="description" content="前言这两天为了破解魔百盒费了好大劲，看了好多帖子，好在最后破解成功了。为了让大家少走弯路，我把破解方法分享出来，希望能帮助到大家。 盒子型号我的盒子型号是 CM201-2 长虹代工 (CH)，具体信息见图片：  板子上的硬件信息是：CPU 型号是 HI3890MV300，闪存是 emmc。机型编码和牌照方不同应该没太大关系，大家可以先尝试一下，不行再说。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="移动魔百盒 CM201 CH(长虹代工) 破解方法分享">
 <meta property="og:url" content="https://liwenkun.github.io/2022/11/04/2022-11-04-CM201-crack/index.html">
 <meta property="og:site_name" content="Chance 的博客">
-<meta property="og:description" content="前言这两天为了破解魔百盒看了好多帖子，费了好大劲，好在最后破解成功了。为了让大家少走弯路，我把破解方法分享出来，希望能有所帮助。 盒子型号我的盒子型号是 CM201-2 长虹代工 (CH)，具体信息见图片：  板子上的硬件信息是：CPU 型号是 HI3890MV300，闪存是 emmc。机型编码和牌照方不同应该没太大关系，大家可以先尝试一下，不行再说。">
+<meta property="og:description" content="前言这两天为了破解魔百盒费了好大劲，看了好多帖子，好在最后破解成功了。为了让大家少走弯路，我把破解方法分享出来，希望能帮助到大家。 盒子型号我的盒子型号是 CM201-2 长虹代工 (CH)，具体信息见图片：  板子上的硬件信息是：CPU 型号是 HI3890MV300，闪存是 emmc。机型编码和牌照方不同应该没太大关系，大家可以先尝试一下，不行再说。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://liwenkun.github.io/img/in-post/cm201_crack/box-info.jpg">
 <meta property="og:image" content="https://liwenkun.github.io/img/in-post/cm201_crack/board-ttl-connection.jpg">
@@ -44,7 +44,7 @@
 <meta property="og:image" content="https://liwenkun.github.io/img/in-post/cm201_crack/google-tv-splash.jpg">
 <meta property="og:image" content="https://liwenkun.github.io/img/in-post/cm201_crack/home.jpg">
 <meta property="article:published_time" content="2022-11-04T00:00:00.000Z">
-<meta property="article:modified_time" content="2025-11-13T03:54:03.189Z">
+<meta property="article:modified_time" content="2025-11-13T13:19:05.118Z">
 <meta property="article:author" content="Chance">
 <meta property="article:tag" content="折腾">
 <meta name="twitter:card" content="summary">
@@ -251,7 +251,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-13 03:54:03" itemprop="dateModified" datetime="2025-11-13T03:54:03+00:00">2025-11-13</time>
+                <time title="修改时间：2025-11-13 13:19:05" itemprop="dateModified" datetime="2025-11-13T13:19:05+00:00">2025-11-13</time>
               </span>
 
           
@@ -286,7 +286,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>这两天为了破解魔百盒看了好多帖子，费了好大劲，好在最后破解成功了。为了让大家少走弯路，我把破解方法分享出来，希望能有所帮助。</p>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>这两天为了破解魔百盒费了好大劲，看了好多帖子，好在最后破解成功了。为了让大家少走弯路，我把破解方法分享出来，希望能帮助到大家。</p>
 <h1 id="盒子型号"><a href="#盒子型号" class="headerlink" title="盒子型号"></a>盒子型号</h1><p>我的盒子型号是 CM201-2 长虹代工 (CH)，具体信息见图片：</p>
 <p><img src="/img/in-post/cm201_crack/box-info.jpg" alt="盒子信息"></p>
 <p>板子上的硬件信息是：CPU 型号是 HI3890MV300，闪存是 emmc。机型编码和牌照方不同应该没太大关系，大家可以先尝试一下，不行再说。</p>
@@ -310,7 +310,7 @@
 </li>
 <li>缺点：刷机步骤略微复杂。</li>
 </ul>
-<p>两种破解模式都需要拆机连电脑，如果你想不拆机，那这篇帖子可能对你没啥参考价值。我在网上找的所有的免拆方法都没有试成功，包括使用 ZANTI 中间人攻击替换 apk 来安装当贝桌面，以及通过遥控按键开启 adb。<br>破解前先要拆机，具体方法是：撕开盒子底部的两个垫子，取下螺丝，再用指甲、卡片等工具把盒子拆开。接下来是具体的破解步骤。</p>
+<p>两种破解模式都需要拆机连电脑，如果你想不拆机，那这篇帖子可能对你没啥参考价值。我在网上找的所有的免拆方法都没有试成功，包括使用 ZANTI 中间人攻击替换 apk 来安装当贝桌面，以及通过遥控按键开启 adb。拆机方法是：撕开盒子底部的两个垫子，取下螺丝，再用指甲、卡片等工具把盒子拆开。接下来是具体的破解步骤。</p>
 <h2 id="第一种破解方案"><a href="#第一种破解方案" class="headerlink" title="第一种破解方案"></a>第一种破解方案</h2><ol>
 <li>准备工具：</li>
 </ol>
@@ -321,7 +321,7 @@
 </ul>
 <ol start="2">
 <li><p>破解步骤：<br>将 usb 转 ttl 模块插入到电脑的 usb 口，然后打开 windows 设备管理器，在端口分类里查看这个模块是在哪个 COM 口，我的是在 COM4。</p>
-<p>用杜邦线把 CH340G 的 RXD、TXD 和 GND三个引脚接到板子上。板子上有四个孔，第一个孔没用，其他三个孔从左到右分别是 RXD、TXD、GND，分别和 CH340G 的 TXD、RXD、GND 相对应，顺序不能错，如下图所示。有的博主给那三个孔焊上了排插，然后用杜邦线直接插上去就行，如果和我一样没有工具，想办法让三根杜邦线和三个孔保持良好的接触也行。</p>
+<p>用杜邦线把 CH340G 的 RXD、TXD 和 GND三个引脚接到板子上。板子上有四个孔，第一个孔没用，其他三个孔从左到右分别是 RXD、TXD、GND，分别和 CH340G 的 TXD、RXD、GND 相对应，顺序不能错，如下图所示。有的博主给那三个孔焊上了排插，然后用杜邦线直接插上去，如果和我一样没有工具，想办法让三根杜邦线和三个孔保持良好的接触也行。</p>
 <p><img src="/img/in-post/cm201_crack/board-ttl-connection.jpg"></p>
 <p>打开 putty ，如下图所示：</p>
 <p><img src="/img/in-post/cm201_crack/putty.png"></p>
@@ -344,7 +344,7 @@
 <li>U 盘（大小最好为 8G，文件系统格式化为 fat32）；</li>
 <li>usb 转 ttl 模块，杜邦线（淘宝有售，我买的型号是 CH340G）；</li>
 <li>串口通信工具（windows 上的 putty，mac 上的 “串口调试助手”，这里以 putty 为例）；</li>
-<li>hitool，搜关键字 “hitool 下载” 就能找到：<a target="_blank" rel="noopener" href="https://ecoo.top/hitool.htm"></a>。</li>
+<li>hitool，搜关键字 “hitool 下载” 就能找到：<a target="_blank" rel="noopener" href="https://ecoo.top/hitool.html">https://ecoo.top/hitool.html</a>。</li>
 </ul>
 <ol>
 <li><p>破解步骤：</p>
@@ -376,7 +376,7 @@
 <p><img src="/img/in-post/cm201_crack/flashing-recovery.png"></p>
 <p>左侧是日志，大概等个十几二十分钟就烧好了（网口应该更快）：</p>
 <p><img src="/img/in-post/cm201_crack/recovery-flashed.png"></p>
-<p>刷完 recovery，就可以尝试刷各种第三方系统了。我这里准备了一个基于别人的包制作的精简包，去除了没用的 app，把巨丑的当贝影视桌面换成了当贝桌面，并且不会出现某些 rom 按主页时当贝桌面等半天或者无法响应的问题。还顺带还把开机动画改成了 Google TV，逼格一下子就上来了。</p>
+<p>刷完 recovery，就可以尝试刷各种第三方系统了。我这里准备了一个基于别人的包制作的精简包，去除了没用的 app，把巨丑的当贝影视桌面换成了当贝桌面，并且不会出现某些 rom 按主页时当贝桌面等半天或者无法响应的问题，还顺带还把开机动画改成了 Google TV，逼格一下子就上来了。</p>
 <p><a target="_blank" rel="noopener" href="https://cloud.189.cn/web/share?code=M7zm6vn6fuau">自制精简版_当贝桌面_Google_tv_开机动画_文件名改成update.zip</a> （访问码：4qxp）</p>
 <p>把文件改成 update.zip 后放到 U 盘根目录中，插到靠近网口的那个 usb 口。重启盒子电源，然后立刻快速交替按遥控器上的菜单键和音量减键，直到进入 recovery 界面（速度一定要快，失败就多试几次）：</p>
 <p><img src="/img/in-post/cm201_crack/recovery.jpg"></p>
