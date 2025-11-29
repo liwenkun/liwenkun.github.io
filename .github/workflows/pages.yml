@@ -14,20 +14,24 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: '16.4.2'
-      - name: Cache NPM dependencies
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 6.32.9
+      - name: Cache pnpm dependencies
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: ${{ runner.OS }}-npm-cache
+          key: ${{ runner.OS }}-pnpm-cache
           restore-keys: |
-            ${{ runner.OS }}-npm-cache
+            ${{ runner.OS }}-pnpm-cache
       - name: Install Dependencies
-        run: npm install
+        run: pnpm install
       - name: Build
-        run: npm run build
+        run: pnpm run build
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
-          publish_branch: master  # deploying branch 
+          publish_branch: master  # deploying branch
