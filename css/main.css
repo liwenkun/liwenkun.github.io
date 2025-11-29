@@ -1257,7 +1257,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #fe91b8;
+  background: #ff6a36;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -2672,7 +2672,13 @@ ul.breadcrumb li + li:last-child {
   font-weight: 400;
   src: url("https://fonts.gstatic.com/s/materialicons/v143/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2") format('woff2');
 }
+.table-container {
+  scrollbar-width: thin; /* 可选：thin, auto, none */
+}
 @media (prefers-color-scheme: dark) {
+  html {
+    scrollbar-color: #888 #333; /* 滑块颜色 轨道颜色 */
+  }
   .post-body a:not(.btn) {
     --link-color: #3a86dd;
     --link-hover-color: #76a9dc;
@@ -2791,104 +2797,129 @@ ul.breadcrumb li + li:last-child {
     top: 1px;
     box-shadow: none;
   }
+  :root {
+    --custom-color-info: #789fd6;
+    --custom-background-info: #1f2123;
+    --custom-color-error: #f15c5c;
+    --custom-background-error: #3d0c07;
+    --custom-color-success: #498c4c;
+    --custom-background-success: #1a2c2b;
+    --custom-color-warn: #ee5553;
+    --custom-background-warn: #421f02;
+  }
   .post-body .image-caption,
   .post-body .figure .caption {
     margin: -5px auto 25px;
   }
-  .notice-info {
-    color: #709cae;
-    background-color: rgba(19,36,53,0.749);
-    border-radius: 0.5em;
-    padding: 1em 1em;
-    padding-left: 4em;
-    font-size: 0.9em;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --custom-color-info: #303f9f;
+    --custom-background-info: #e8f0fe;
+    --custom-color-error: #a50e0e;
+    --custom-background-error: #fce8e6;
+    --custom-color-success: #0e8a0e;
+    --custom-background-success: #e6fce6;
+    --custom-color-warn: #b31412;
+    --custom-background-warn: #feefe3;
   }
-  .notice-info::before {
-    content: "star";
-    float: left;
-    font: normal normal normal 24px/24px Material Icons;
-    -webkit-font-feature-settings: "liga";
-    -moz-font-feature-settings: "liga";
-    font-feature-settings: "liga";
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    text-transform: none;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    margin-block: 0;
-    margin-inline: -36px 0;
+  .highlight-container {
+    box-shadow: 0 0px 10px 0 rgba(0,0,0,0.5);
   }
-  .notice-error {
-    color: #cb5c5b;
-    background-color: #3f2510;
-    border-radius: 0.5em;
-    padding: 1em 1em;
-    padding-left: 4em;
-    font-size: 0.9em;
-  }
-  .notice-error::before {
-    content: "info";
-    float: left;
-    font: normal normal normal 24px/24px Material Icons;
-    -webkit-font-feature-settings: "liga";
-    -moz-font-feature-settings: "liga";
-    font-feature-settings: "liga";
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    text-transform: none;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    margin-block: 0;
-    margin-inline: -36px 0;
-  }
-  .notice-success {
-    background-color: #1a2c2b;
-    color: #3c7e3f;
-    border-radius: 0.5em;
-    padding: 1em 1em;
-    padding-left: 4em;
-    font-size: 0.9em;
-  }
-  .notice-success::before {
-    content: "lightbulb_outline";
-    float: left;
-    font: normal normal normal 24px/24px Material Icons;
-    -webkit-font-feature-settings: "liga";
-    -moz-font-feature-settings: "liga";
-    font-feature-settings: "liga";
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    text-transform: none;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    margin-block: 0;
-    margin-inline: -36px 0;
-  }
-  .notice-warn {
-    background-color: #2d2100;
-    color: #cd9543;
-    border-radius: 0.5em;
-    padding: 1em 1em;
-    padding-left: 4em;
-    font-size: 0.9em;
-  }
-  .notice-warn::before {
-    content: "warning";
-    float: left;
-    font: normal normal normal 24px/24px Material Icons;
-    -webkit-font-feature-settings: "liga";
-    -moz-font-feature-settings: "liga";
-    font-feature-settings: "liga";
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    text-transform: none;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    margin-block: 0;
-    margin-inline: -36px 0;
-  }
+}
+.notice-info {
+  color: var(--custom-color-info);
+  background-color: var(--custom-background-info);
+  border-radius: 0.5em;
+  padding: 1em 1em;
+  padding-left: 4em;
+  font-size: 0.9em;
+}
+.notice-info::before {
+  content: "star";
+  float: left;
+  font: normal normal normal 24px/24px Material Icons;
+  -webkit-font-feature-settings: "liga";
+  -moz-font-feature-settings: "liga";
+  font-feature-settings: "liga";
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  margin-block: 0;
+  margin-inline: -36px 0;
+}
+.notice-error {
+  color: var(--custom-color-error);
+  background-color: var(--custom-background-error);
+  border-radius: 0.5em;
+  padding: 1em 1em;
+  padding-left: 4em;
+  font-size: 0.9em;
+}
+.notice-error::before {
+  content: "info";
+  float: left;
+  font: normal normal normal 24px/24px Material Icons;
+  -webkit-font-feature-settings: "liga";
+  -moz-font-feature-settings: "liga";
+  font-feature-settings: "liga";
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  margin-block: 0;
+  margin-inline: -36px 0;
+}
+.notice-success {
+  background-color: var(--custom-background-success);
+  color: var(--custom-color-success);
+  border-radius: 0.5em;
+  padding: 1em 1em;
+  padding-left: 4em;
+  font-size: 0.9em;
+}
+.notice-success::before {
+  content: "lightbulb_outline";
+  float: left;
+  font: normal normal normal 24px/24px Material Icons;
+  -webkit-font-feature-settings: "liga";
+  -moz-font-feature-settings: "liga";
+  font-feature-settings: "liga";
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  margin-block: 0;
+  margin-inline: -36px 0;
+}
+.notice-warn {
+  background-color: var(--custom-background-warn);
+  color: var(--custom-color-warn);
+  border-radius: 0.5em;
+  padding: 1em 1em;
+  padding-left: 4em;
+  font-size: 0.9em;
+}
+.notice-warn::before {
+  content: "warning";
+  float: left;
+  font: normal normal normal 24px/24px Material Icons;
+  -webkit-font-feature-settings: "liga";
+  -moz-font-feature-settings: "liga";
+  font-feature-settings: "liga";
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  margin-block: 0;
+  margin-inline: -36px 0;
 }

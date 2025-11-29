@@ -232,7 +232,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 12:43:16" itemprop="dateModified" datetime="2025-11-29T12:43:16+00:00">2025-11-29</time>
+                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
               </span>
 
           <br>
@@ -302,7 +302,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2024/04/04/2024-04-04-understand-cross-origin/" class="post-title-link" itemprop="url">理解前端跨源问题</a>
+            <a href="/2024/04/04/2024-04-04-understand-cross-origin/" class="post-title-link" itemprop="url">理解跨源资源共享（CORS）</a>
         </h2>
 
         <div class="post-meta">
@@ -319,7 +319,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 12:43:16" itemprop="dateModified" datetime="2025-11-29T12:43:16+00:00">2025-11-29</time>
+                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
               </span>
 
           <br>
@@ -328,14 +328,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.7k</span>
+              <span>5.4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
+              <span>5 分钟</span>
             </span>
 
         </div>
@@ -347,12 +347,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="什么是跨源请求？"><a href="#什么是跨源请求？" class="headerlink" title="什么是跨源请求？"></a>什么是跨源请求？</h1><p>先看看什么是同源 URL：</p>
+          <h2 id="什么是跨源请求"><a href="#什么是跨源请求" class="headerlink" title="什么是跨源请求"></a>什么是跨源请求</h2><p>先看同源 URL 定义：</p>
 <blockquote>
 <p>如果两个 URL 的<a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Glossary/Protocol">协议</a>、<a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Glossary/Port">端口</a>（如果有指定的话）和<a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Glossary/Host">主机</a>都相同的话，则这两个 URL 是同源的。这个方案也被称为“协议&#x2F;主机&#x2F;端口元组”，或者直接是“元组”。（“元组”是指一组项目构成的整体，具有双重&#x2F;三重&#x2F;四重&#x2F;五重等通用形式。）</p>
 </blockquote>
-<p>当网站的 URL 和网站发出请求的 URL 是非同源的，我们便说这个请求是跨源请求。</p>
-<h1 id="请求为什么不能跨源？"><a href="#请求为什么不能跨源？" class="headerlink" title="请求为什么不能跨源？"></a>请求为什么不能跨源？</h1><p>假如 A 是银行网站，你在 A 网站上进行了登录，A 网站将 token 保存在浏览器的 cookies 中。接下来你收到了一封钓鱼网站 B 发来的邮件，并点开了其中的连接，然后 B 网站在你不知情的情况下调用 A 网站的转账接口，将你在这家银行的钱全转进他的帐户里。由于转账接口的域名是 A 网站的，因此这个请求会把浏览器保存的 A 网站 cookies 也一并带上去，于是该请求就能顺利通过 A 网站服务器的身份验证，然后你💰就没了 : (。</p>
+<p>当网页发出请求的 URL 和网页的 URL 是非同源的，我们便说这个请求是跨源请求。安全起见，浏览器会对跨源请求做出限制。</p>
+<h2 id="为什么要对跨源请求进行限制"><a href="#为什么要对跨源请求进行限制" class="headerlink" title="为什么要对跨源请求进行限制"></a>为什么要对跨源请求进行限制</h2><p>假如你曾经登录过银行网站 A，该网站会将 token 保存在你浏览器的 Cookies 中。某天你收到了一封来自钓鱼网站 B 的邮件，你点开链接打开了 B 网站，B 网站调用 A 网站的转账接口，企图将你在这家银行的钱转进他的帐户里。如果浏览器不对跨源请求做任何限制，A 网站的 Cookies 便会附带到转账请求中，请求就能顺利通过 A 网站服务器的身份验证，你的钱就被转走了。</p>
+<p>为了解决这个问题，浏览器引入了 <strong>同源策略</strong>。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2024/04/04/2024-04-04-understand-cross-origin/#more" rel="contents">
@@ -410,7 +411,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 12:43:16" itemprop="dateModified" datetime="2025-11-29T12:43:16+00:00">2025-11-29</time>
+                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
               </span>
 
           <br>
@@ -505,7 +506,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 12:43:16" itemprop="dateModified" datetime="2025-11-29T12:43:16+00:00">2025-11-29</time>
+                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
               </span>
 
           <br>
@@ -592,7 +593,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 12:43:16" itemprop="dateModified" datetime="2025-11-29T12:43:16+00:00">2025-11-29</time>
+                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
               </span>
 
           <br>
@@ -679,7 +680,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 12:43:16" itemprop="dateModified" datetime="2025-11-29T12:43:16+00:00">2025-11-29</time>
+                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
               </span>
 
           <br>
@@ -768,7 +769,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 12:43:16" itemprop="dateModified" datetime="2025-11-29T12:43:16+00:00">2025-11-29</time>
+                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
               </span>
 
           <br>
@@ -855,7 +856,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 12:43:16" itemprop="dateModified" datetime="2025-11-29T12:43:16+00:00">2025-11-29</time>
+                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
               </span>
 
           <br>
@@ -946,7 +947,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 12:43:16" itemprop="dateModified" datetime="2025-11-29T12:43:16+00:00">2025-11-29</time>
+                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
               </span>
 
           <br>
@@ -1033,7 +1034,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 12:43:16" itemprop="dateModified" datetime="2025-11-29T12:43:16+00:00">2025-11-29</time>
+                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
               </span>
 
           <br>
@@ -1225,13 +1226,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">256k</span>
+    <span title="站点总字数">258k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:53</span>
+    <span title="站点阅读时长">3:54</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
