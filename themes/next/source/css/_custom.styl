@@ -6,11 +6,22 @@ if (hexo-config('darkmode')) {
    font-weight: 400;
    src: url(https://fonts.gstatic.com/s/materialicons/v143/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
   }
+
+  .table-container {
+    scrollbar-width: thin; /* 可选：thin, auto, none */
+  }
+
+  
   // 在支持深色模式的设备上应用以下样式
   @media (prefers-color-scheme: dark) {
+    /* 适用于 Firefox 和部分现代浏览器 */
+    html {
+      scrollbar-color: #888 #333; /* 滑块颜色 轨道颜色 */
+    }
+
 
     // 文章主体内链接样式
-    .post-body {
+    .post-body {    
       a:not(.btn) {
         --link-color: #3a86dd;
         --link-hover-color: #76a9dc;
@@ -169,75 +180,91 @@ if (hexo-config('darkmode')) {
       top: 1px;
       box-shadow: none;
     }
-
-    notice_before() {
-      float: left;
-      font: normal normal normal 24px/24px Material Icons;
-      -webkit-font-feature-settings: "liga";
-      -moz-font-feature-settings: "liga";
-      font-feature-settings: "liga";
-      -moz-osx-font-smoothing: grayscale;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      text-transform: none;
-      word-wrap: normal;
-      margin-block: 0;
-      margin-inline: -36px 0;
+    :root {
+      --custom-color-info: #789fd6;
+      --custom-background-info: #1f2123;
+      --custom-color-error: #f15c5c;
+      --custom-background-error: #3d0c07;
+      --custom-color-success: rgb(73 140 76);
+      --custom-background-success: rgb(26 44 43);
+      --custom-color-warn: #ee5553;
+      --custom-background-warn:#421f02; 
     }
-
-    notice() {
-      border-radius: 0.5em;
-      padding: 1em 1em;
-      padding-left: 4em;
-      font-size: 0.9em;
-    }
-
     .post-body .image-caption, .post-body .figure .caption {
       margin: -5px auto 25px;
     }
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+    --custom-color-info:#303f9f;
+    --custom-background-info: #e8f0fe;
+    --custom-color-error: #a50e0e;
+    --custom-background-error: #fce8e6;
+    --custom-color-success: #0e8a0e;
+    --custom-background-success: #e6fce6;
+    --custom-color-warn: #b31412;
+    --custom-background-warn: #feefe3; 
+    }
+    .highlight-container {
+        box-shadow: 0 0px 10px 0 rgba(0,0,0,0.5);
+      }
+  }
+  notice_before() {
+    float: left;
+    font: normal normal normal 24px/24px Material Icons;
+    -webkit-font-feature-settings: "liga";
+    -moz-font-feature-settings: "liga";
+    font-feature-settings: "liga";
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    text-transform: none;
+    word-wrap: normal;
+    margin-block: 0;
+    margin-inline: -36px 0;
+  }
+  notice() {
+    border-radius: 0.5em;
+    padding: 1em 1em;
+    padding-left: 4em;
+    font-size: 0.9em;
+  }
 
-    .notice-info {
-      color: #709cae;
-      background-color: #132435bf;
-      notice()
-    }
-
-    .notice-info::before {
-      content: "star";
-      notice_before()
-    }
-    
-    .notice-error {
-      color: #cb5c5b;
-      background-color: #3f2510;
-      notice()
-    }
-
-    .notice-error::before {
-      content: "info";
-      notice_before()
-    }
-
-    .notice-success {
-      background-color: rgb(26 44 43);
-      color: #3c7e3f;
-      notice()
-    }
-
-    .notice-success::before {
-      content: "lightbulb_outline";
-      notice_before()
-    }
-
-    .notice-warn {
-      background-color: rgb(45 33 0);
-      color: rgb(205 149 67);
-      notice()
-    }
-
-    .notice-warn::before {
-      content: "warning";
-      notice_before()
-    }
+  .notice-info {
+    color: var( --custom-color-info);
+    background-color: var(--custom-background-info);
+    notice()
+  }
+  .notice-info::before {
+    content: "star";
+    notice_before()
+  }
+  
+  .notice-error {
+    color: var(--custom-color-error);
+    background-color: var(--custom-background-error);
+    notice()
+  }
+  .notice-error::before {
+    content: "info";
+    notice_before()
+  }
+  .notice-success {
+    background-color: var(--custom-background-success);
+    color: var(--custom-color-success);
+    notice()
+  }
+  .notice-success::before {
+    content: "lightbulb_outline";
+    notice_before()
+  }
+  .notice-warn {
+    background-color: var(--custom-background-warn);
+    color: var(--custom-color-warn);
+    notice()
+  }
+  .notice-warn::before {
+    content: "warning";
+    notice_before()
   }
 }
