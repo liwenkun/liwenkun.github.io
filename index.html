@@ -148,7 +148,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">27</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">28</span></a>
 
   </li>
       <li class="menu-item menu-item-search">
@@ -201,6 +201,101 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://liwenkun.github.io/2025/12/06/2025-12-06-Rust-ownership-understanding/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://www.gravatar.com/avatar/95a0f14d3e6b40995a92c41673fd09d4?s=640">
+      <meta itemprop="name" content="Chance">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Chance 的博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2025/12/06/2025-12-06-Rust-ownership-understanding/" class="post-title-link" itemprop="url">未命名</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2025-12-06 22:42:00" itemprop="dateCreated datePublished" datetime="2025-12-06T22:42:00+00:00">2025-12-06</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Rust-所有权规则简述"><a href="#Rust-所有权规则简述" class="headerlink" title="Rust 所有权规则简述"></a>Rust 所有权规则简述</h2><p>对于低级语言而言，对象的回收往往是一个难题。一个对象创建后，往往会在各个地方传递，由于对象的引用者们生命周期不尽相同，也就不知道何时、由谁来负责对象的释放。</p>
+<p>Rust 所有权规则是如何解决这个问题的呢？它把对象分为可变对象和不可变对象，对象的引用者分为所有者和借用者。下面是我根据自己的理解做的总结：</p>
+<ul>
+<li><p>一个对象有且只能有一个所有者，对象的释放由其所有者负责，对象的所有权可以转移。</p>
+</li>
+<li><p>借用分为可变借用和不可变借用：</p>
+<ul>
+<li>多个不可变借用可共存；</li>
+<li>可变借用不可和其他借用共存，无论借用是可变还是不可变；</li>
+<li>对象所有者不能在不可变借用前写对象，不能在可变借用前读写对象；</li>
+<li>可变对象可以有可变和不可变借用，不可变对象只能有不可变借用；</li>
+</ul>
+</li>
+<li><p>对象的所有权转移时，对象的可变性可以发生更改。</p>
+</li>
+</ul>
+<p class="notice-info">不能共存指的是它们的作用域不能有交集</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/12/06/2025-12-06-Rust-ownership-understanding/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://liwenkun.github.io/2024/04/08/2024-04-08-kotlin-coroutine-state-machine/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -232,7 +327,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
+                <time title="修改时间：2025-12-06 22:42:00" itemprop="dateModified" datetime="2025-12-06T22:42:00+00:00">2025-12-06</time>
               </span>
 
           <br>
@@ -319,7 +414,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
+                <time title="修改时间：2025-12-06 22:42:00" itemprop="dateModified" datetime="2025-12-06T22:42:00+00:00">2025-12-06</time>
               </span>
 
           <br>
@@ -411,7 +506,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
+                <time title="修改时间：2025-12-06 22:42:00" itemprop="dateModified" datetime="2025-12-06T22:42:00+00:00">2025-12-06</time>
               </span>
 
           <br>
@@ -506,7 +601,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
+                <time title="修改时间：2025-12-06 22:42:00" itemprop="dateModified" datetime="2025-12-06T22:42:00+00:00">2025-12-06</time>
               </span>
 
           <br>
@@ -593,7 +688,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
+                <time title="修改时间：2025-12-06 22:42:00" itemprop="dateModified" datetime="2025-12-06T22:42:00+00:00">2025-12-06</time>
               </span>
 
           <br>
@@ -680,7 +775,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
+                <time title="修改时间：2025-12-06 22:42:00" itemprop="dateModified" datetime="2025-12-06T22:42:00+00:00">2025-12-06</time>
               </span>
 
           <br>
@@ -769,7 +864,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
+                <time title="修改时间：2025-12-06 22:42:00" itemprop="dateModified" datetime="2025-12-06T22:42:00+00:00">2025-12-06</time>
               </span>
 
           <br>
@@ -856,7 +951,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
+                <time title="修改时间：2025-12-06 22:42:00" itemprop="dateModified" datetime="2025-12-06T22:42:00+00:00">2025-12-06</time>
               </span>
 
           <br>
@@ -947,7 +1042,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
+                <time title="修改时间：2025-12-06 22:42:00" itemprop="dateModified" datetime="2025-12-06T22:42:00+00:00">2025-12-06</time>
               </span>
 
           <br>
@@ -980,92 +1075,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2017/09/05/2017-09-05-android-how-motion-event-dispatched/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://liwenkun.github.io/2017/08/29/2017-08-29-glide-disk-cache-strategy/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://www.gravatar.com/avatar/95a0f14d3e6b40995a92c41673fd09d4?s=640">
-      <meta itemprop="name" content="Chance">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Chance 的博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/08/29/2017-08-29-glide-disk-cache-strategy/" class="post-title-link" itemprop="url">Glide 之磁盘缓存</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-08-29 00:00:00" itemprop="dateCreated datePublished" datetime="2017-08-29T00:00:00+00:00">2017-08-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-11-29 15:26:47" itemprop="dateModified" datetime="2025-11-29T15:26:47+00:00">2025-11-29</time>
-              </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>9.5k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>9 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Glide-之磁盘缓存"><a href="#Glide-之磁盘缓存" class="headerlink" title="Glide 之磁盘缓存"></a>Glide 之磁盘缓存</h1><p>Glide 提供了灵活的磁盘缓存策略，用户可以定义自己的缓存策略，只需要实现 DiskCache 接口即可。Glide 中已经有两个 DiskCache 实现，一个是 DiskCacheWrapper，这个类什么都没干，就是一个空壳，用来包装其他的 DiskCache 实现类；另一个类是 DiskLruCaheWrapper，它是基于 DiskLruCache 实现的。接下来从 DiskLruCahce 分析一下 Glide 的磁盘缓存。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2017/08/29/2017-08-29-glide-disk-cache-strategy/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1156,7 +1165,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">28</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1226,13 +1235,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">258k</span>
+    <span title="站点总字数">263k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:54</span>
+    <span title="站点阅读时长">3:59</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
