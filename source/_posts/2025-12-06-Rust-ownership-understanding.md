@@ -1,3 +1,14 @@
+---
+layout:     post
+title:      对 Rust 所有权的理解
+subtitle:  
+date:       2025-12-06
+author:     "Chance"
+catalog:  true
+tags:
+    - Rust
+---
+
 ## Rust 所有权规则简述
 
 对于低级语言而言，对象的回收往往是一个难题。一个对象创建后，往往会在各个地方传递，由于对象的引用者们生命周期不尽相同，也就不知道何时、由谁来负责对象的回收。
