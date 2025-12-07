@@ -201,7 +201,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://liwenkun.github.io/2025/12/06/2025-12-06-Rust-ownership-understanding/">
+    <link itemprop="mainEntityOfPage" href="https://liwenkun.github.io/2025/12/07/2025-12-06-Rust-ownership-understanding/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://www.gravatar.com/avatar/95a0f14d3e6b40995a92c41673fd09d4?s=640">
@@ -215,7 +215,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2025/12/06/2025-12-06-Rust-ownership-understanding/" class="post-title-link" itemprop="url">未命名</a>
+            <a href="/2025/12/07/2025-12-06-Rust-ownership-understanding/" class="post-title-link" itemprop="url">未命名</a>
         </h2>
 
         <div class="post-meta">
@@ -225,7 +225,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2025-12-06 23:35:37" itemprop="dateCreated datePublished" datetime="2025-12-06T23:35:37+00:00">2025-12-06</time>
+              <time title="创建时间：2025-12-07 10:24:23" itemprop="dateCreated datePublished" datetime="2025-12-07T10:24:23+00:00">2025-12-07</time>
             </span>
 
           <br>
@@ -253,10 +253,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="Rust-所有权规则简述"><a href="#Rust-所有权规则简述" class="headerlink" title="Rust 所有权规则简述"></a>Rust 所有权规则简述</h2><p>对于低级语言而言，对象的回收往往是一个难题。一个对象创建后，往往会在各个地方传递，由于对象的引用者们生命周期不尽相同，也就不知道何时、由谁来负责对象的释放。</p>
+          <h2 id="Rust-所有权规则简述"><a href="#Rust-所有权规则简述" class="headerlink" title="Rust 所有权规则简述"></a>Rust 所有权规则简述</h2><p>对于低级语言而言，对象的回收往往是一个难题。一个对象创建后，往往会在各个地方传递，由于对象的引用者们生命周期不尽相同，也就不知道何时、由谁来负责对象的回收。</p>
 <p>Rust 所有权规则是如何解决这个问题的呢？它把对象分为可变对象和不可变对象，对象的引用者分为所有者和借用者。下面是我根据自己的理解做的总结：</p>
 <ul>
-<li><p>一个对象有且只能有一个所有者，对象的释放由其所有者负责，对象的所有权可以转移。</p>
+<li><p>一个对象有且只能有一个所有者，对象的回收由其所有者负责，对象的所有权可以转移。</p>
 </li>
 <li><p>借用分为可变借用和不可变借用：</p>
 <ul>
@@ -272,7 +272,7 @@
 <p class="notice-info">不能共存指的是它们的作用域不能有交集</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/12/06/2025-12-06-Rust-ownership-understanding/#more" rel="contents">
+              <a class="btn" href="/2025/12/07/2025-12-06-Rust-ownership-understanding/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -327,7 +327,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-06 23:35:37" itemprop="dateModified" datetime="2025-12-06T23:35:37+00:00">2025-12-06</time>
+                <time title="修改时间：2025-12-07 10:24:23" itemprop="dateModified" datetime="2025-12-07T10:24:23+00:00">2025-12-07</time>
               </span>
 
           <br>
@@ -414,7 +414,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-06 23:35:37" itemprop="dateModified" datetime="2025-12-06T23:35:37+00:00">2025-12-06</time>
+                <time title="修改时间：2025-12-07 10:24:23" itemprop="dateModified" datetime="2025-12-07T10:24:23+00:00">2025-12-07</time>
               </span>
 
           <br>
@@ -506,7 +506,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-06 23:35:37" itemprop="dateModified" datetime="2025-12-06T23:35:37+00:00">2025-12-06</time>
+                <time title="修改时间：2025-12-07 10:24:23" itemprop="dateModified" datetime="2025-12-07T10:24:23+00:00">2025-12-07</time>
               </span>
 
           <br>
@@ -601,7 +601,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-06 23:35:37" itemprop="dateModified" datetime="2025-12-06T23:35:37+00:00">2025-12-06</time>
+                <time title="修改时间：2025-12-07 10:24:23" itemprop="dateModified" datetime="2025-12-07T10:24:23+00:00">2025-12-07</time>
               </span>
 
           <br>
@@ -688,7 +688,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-06 23:35:37" itemprop="dateModified" datetime="2025-12-06T23:35:37+00:00">2025-12-06</time>
+                <time title="修改时间：2025-12-07 10:24:23" itemprop="dateModified" datetime="2025-12-07T10:24:23+00:00">2025-12-07</time>
               </span>
 
           <br>
@@ -775,7 +775,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-06 23:35:37" itemprop="dateModified" datetime="2025-12-06T23:35:37+00:00">2025-12-06</time>
+                <time title="修改时间：2025-12-07 10:24:23" itemprop="dateModified" datetime="2025-12-07T10:24:23+00:00">2025-12-07</time>
               </span>
 
           <br>
@@ -864,7 +864,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-06 23:35:37" itemprop="dateModified" datetime="2025-12-06T23:35:37+00:00">2025-12-06</time>
+                <time title="修改时间：2025-12-07 10:24:23" itemprop="dateModified" datetime="2025-12-07T10:24:23+00:00">2025-12-07</time>
               </span>
 
           <br>
@@ -951,7 +951,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-06 23:35:37" itemprop="dateModified" datetime="2025-12-06T23:35:37+00:00">2025-12-06</time>
+                <time title="修改时间：2025-12-07 10:24:23" itemprop="dateModified" datetime="2025-12-07T10:24:23+00:00">2025-12-07</time>
               </span>
 
           <br>
@@ -1042,7 +1042,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-06 23:35:37" itemprop="dateModified" datetime="2025-12-06T23:35:37+00:00">2025-12-06</time>
+                <time title="修改时间：2025-12-07 10:24:23" itemprop="dateModified" datetime="2025-12-07T10:24:23+00:00">2025-12-07</time>
               </span>
 
           <br>
