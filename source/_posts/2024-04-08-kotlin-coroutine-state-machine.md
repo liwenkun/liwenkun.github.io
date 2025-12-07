@@ -373,7 +373,7 @@ public interface Continuation<in T> {
 
 ​`Continuation`​ 正是 Kotlin 用来实现协程 **允许执行被挂起与被恢复** 这一语义的。`Continuation`​ 逻辑上是一个栈式结构，它用来模拟 suspend 方法（包括 suspend lambda）的调用栈，为什么需要模拟 suspend 方法的调用栈？我们知道，非 suspend 方法的调用栈是由虚拟机维护的，也就是我们所熟悉的栈帧，但是虚拟机并不会为 suspend 方法生成栈帧，这是因为 suspend 方法的调用是异步的，虚拟机的世界中，并没有异步方法调用的概念，它属于 Kotlin 语言自己的语义范畴，Kotlin 编译器必须自己负责实现这个语义。
 
-Kotlin 实现这个语义的方案是，编译时为每一个 suspend 方法生成一个对应的 `Continuation`​ 对象（一般是 `BaseContinuationImpl` 的子类对象），由这个对象负责保存 suspend 方法的上下文，同时会为其生成一个 `invokeSuspend()` 方法，然后把 suspend 方法体的逻辑塞进这个 `invokeSuspend()` 方法中。编译器逻辑上会把一个 suspend 方法分割成多段分步执行，具体来说是：每当遇到对其他 suspend 方法的调用点时，当前 suspend 方法便会被挂起（暂停执行），其上下文会保存到对应的`Continuation`​对象中，后续可调用其 `resumeWith()`​ 方法（通常由下游 suspend 方法对应的 `Continuation`​ 对象调用）恢复该 suspend 方法的上下文，让它从挂起点接着执行，就这样 “断断续续” 地执行直到当前 suspend 方法执行完毕。当前 suspend 方法执行完毕后，会调用调用栈上游的 suspend 方法对应的`Continuation`​对象的 `resumeWith()`​方法，从而让上游的 suspend 方法接着执行。上游方法重复这个过程，直到最顶层的 suspend 方法执行完毕。
+Kotlin 实现这个语义的方案是，编译时为每一个 suspend 方法生成一个与其相关联的 `Continuation`​ 对象（一般是 `BaseContinuationImpl` 的子类对象），由这个对象负责保存 suspend 方法的上下文，同时会为其生成一个 `invokeSuspend()` 方法，然后把 suspend 方法体的逻辑塞进这个 `invokeSuspend()` 方法中。编译器逻辑上会把一个 suspend 方法分割成多段分步执行，具体来说是：每当遇到对其他 suspend 方法的调用点时，当前 suspend 方法便会被挂起（暂停执行），其上下文会保存到关联的 `Continuation`​对象中，后续可调用其 `resumeWith()`​ 方法（通常由下游 suspend 方法关联的 `Continuation`​ 对象调用）恢复该 suspend 方法的上下文，让它从挂起点接着执行，就这样 “断断续续” 地执行直到当前 suspend 方法执行完毕。当前 suspend 方法执行完毕后，会调用调用栈上游的 suspend 方法关联的 `Continuation`​对象的 `resumeWith()`​方法，从而让上游的 suspend 方法接着执行。上游方法重复这个过程，直到最顶层的 suspend 方法执行完毕。
 
 <p class="notice-success">现在听上去可能会有点抽象，接下来我们看具体实现就明白了。</p>
 
@@ -383,7 +383,7 @@ Kotlin 实现这个语义的方案是，编译时为每一个 suspend 方法生�
 
 ```kotlin
 internal abstract class BaseContinuationImpl(
-    // completion 便是上游 suspend 方法对应的 Continuation 对象
+    // completion 便是上游 suspend 方法关联的 Continuation 对象
     public val completion: Continuation<Any?>?
 ) : Continuation<Any?>, CoroutineStackFrame, Serializable {
 
@@ -450,7 +450,7 @@ public final override fun resumeWith(result: Result<Any?>) {
 }
 ```
 
-前面提到过，第 6 行的 `invokeSuspend()` 是编译器为 suspend lambda（或 suspend 方法）生成的 Continuaion 对象中的方法，其中包含了 suspend lambda（或 suspend 方法）方法体的逻辑。如果 `invokeSuspend()` 返回的是 `COROUTINE_SUSPENDED`​，则会导致`resumeWith()`​ 返回，这表示该`Continuation`​对应的 suspend 方法挂起。否则说明 suspend 方法执行完毕，接着会递归调用上游 suspend 方法的 `Continuation`​ 对象的 `resumeWith`​ 方法来恢复上游 suspend 方法的执行。
+前面提到过，第 6 行的 `invokeSuspend()` 是编译器为 suspend lambda（或 suspend 方法）生成的 Continuaion 对象中的方法，其中包含了 suspend lambda（或 suspend 方法）方法体的逻辑。如果 `invokeSuspend()` 返回的是 `COROUTINE_SUSPENDED`​，则会导致`resumeWith()`​ 返回，这表示该`Continuation`​关联的 suspend 方法挂起。否则说明 suspend 方法执行完毕，接着会递归调用上游 suspend 方法的 `Continuation`​ 对象的 `resumeWith`​ 方法来恢复上游 suspend 方法的执行。
 
 <p class="notice-info">Kotlin 将上游 suspend 方法的 Continuation​ 对象命名为 completion​ ，可以说是非常贴切了。</p>
 
@@ -514,7 +514,7 @@ class _SuspendLambda : SuspendLambda, Function1<Object> {
 - 将 `label`​ 置位 1，这样下次就会从 `1 ->`​这个分支执行。
 - 调用 `fun1()`​ 获取结果，因为`fun1() `​返回的是 `COROUTINE_SUSPENDED`​ （因为 `fun1()`​ 是 suspend 方法，所以此处返回的就是 `COROUTINE_SUSPENDED`​，原因后面分析 `fun1()`​ 的时候就知道了）， 所以`invokeSuspend()`​ 会从第 13 行返回，`resumeWith()`​拿到这个结果后，suspend lambda 的执行则会终止。
 
-你可能会有疑问，示例代码中的`fun1()`​ 没有参数，为什么这里会传参数？前面说过，当一个 suspend 方法执行完毕后，它会调用上游 suspend 方法对应的 `Continuation`​ 对象的 `resumeWith()`​ 方法来恢复上游方法的执行，因此下游方法必须拿到上游方法的 `Continuation`​ 对象才行。和 suspend lambda 一样，Kotlin 编译器也会为每一个 suspend 方法自动添加一个 `Continuation`​ 类型的参数，目的就是为了让下游方法持有上游方法的 `Continuation`​ 对象。
+你可能会有疑问，示例代码中的`fun1()`​ 没有参数，为什么这里会传参数？前面说过，当一个 suspend 方法执行完毕后，它会调用上游 suspend 方法关联的 `Continuation`​ 对象的 `resumeWith()`​ 方法来恢复上游方法的执行，因此下游方法必须拿到上游方法的 `Continuation`​ 对象才行。和 suspend lambda 一样，Kotlin 编译器也会为每一个 suspend 方法自动添加一个 `Continuation`​ 类型的参数，目的就是为了让下游方法持有上游方法的 `Continuation`​ 对象。
 
 <p class="notice-success">实际上这个参数有多重含义，这个后面会说</p>
 
@@ -679,7 +679,7 @@ fun fun1(continuation: Continuation<Any?>): Any? {
 
 改写后的代码逻辑清晰多了，我们来分析一下 `fun1()` 中的逻辑：
 
-- 首先是为 `fun1()`​ 构造对应的 `Continuation`​。如果传入的 `Continuation`​ 对象是 `Fun1Continuation`​ 类型，说明已经包装过了，就不做处理，否则，使用 `Fun1Continuation`​ 对 `continuation`​ 进行包装，将其作为上游 `Continuation`​ 持有。最后得到的 `cont`​ 便是 `fun1()`​ 所对应的 `Continuation`​。前面说过了，`Continuation`​ 中包含了函数的上下文，从 `Fun1Continuation` 的定义能看出，这个上下文包含以下几个部分：
+- 首先是为 `fun1()`​ 构造与之关联的 `Continuation`​。如果传入的 `Continuation`​ 是 `Fun1Continuation`​ 类型，说明已经包装过了，就不做处理，否则，使用 `Fun1Continuation`​ 对 `continuation`​ 进行包装，将其作为上游 `Continuation`​ 持有。最后得到的 `cont`​ 便是 `fun1()`​ 所关联的 `Continuation`​。前面说过了，`Continuation`​ 中包含了函数的上下文，从 `Fun1Continuation` 的定义能看出，这个上下文包含以下几个部分：
 
   - 执行进度，即 `cont.label`​；
   - 上游 `suspend`​ 方法的 `Continuation`​ 对象，即 `Fun1Continuation` 构造方法传入的 `completion`​
