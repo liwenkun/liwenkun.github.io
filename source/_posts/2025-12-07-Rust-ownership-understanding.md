@@ -2,7 +2,7 @@
 layout:     post
 title:      对 Rust 所有权的理解
 subtitle:  
-date:       2025-12-06
+date:       2025-12-07
 author:     "Chance"
 catalog:  true
 tags:
