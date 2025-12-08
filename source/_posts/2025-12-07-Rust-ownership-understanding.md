@@ -28,12 +28,13 @@ Rust 所有权规则是如何解决这个问题的呢？它把对象分为可变
 
 <!-- more -->
 
-我们知道，编译器是知道栈上每一个变量的生命周期的。对于栈上的每一个变量，如果它是对象的借用者，那么它会在生命周期结束后释放借用，如果是对象的所有者，Rust 会在该变量生命周期结束时，将该对象回收，具体做法是：
+我们知道，编译器是知道栈上每一个变量的生命周期的。对于栈上的每一个变量，如果它是对象的借用者，那么它会在生命周期结束后释放借用，如果是对象的所有者，编译器会在该变量生命周期结束时，调用编译器为对象自动生成的析构函数，析构函数的逻辑是：
 
-1. 如果对象实现了 `Drop` trait 方法，调用它的 `drop` 方法以释放其持有的资源；
-2. 如果对象包含其他对象（包含对象本身，而非包含对象的借用），对这些对象递归执行这两件事。
+1. 如果对象实现了 `Drop` trait，调用它的 `drop` 方法以释放其持有的资源。容器类对象通常要在这里手动清理容器内的每一个元素，然后再清理缓冲区本身。之所以这样做是因为编译器不感知缓冲区内的数据到底是对象，还是图片等其他类型的数据，因此没法针对缓冲区对象生成清理逻辑。rust 提供了一个方法辅助容器类对象回收内部的元素：`drop_in_replace()`，该方法会对元素执行和这里相同的逻辑。
+2. 如果对象包含其他对象，按声明顺序执行这些对象的析构函数。
+3. 否则啥也不做，让对象随着栈帧或者外层对象的回收而回收即可。
 
-结合代码直观体会上述概念：
+结合代码体会上述概念：
 
 ```rust
 fn main() {
@@ -105,12 +106,46 @@ fn main() {
         name: "John"
     };
     change_mutability(p); // 所有权转移，对象由不可变转为可变。
-    
 }
 
 fn change_mutability(mut p: Person) {
     p.age = 13;
     let q = p; // 所有权转移，对象由可变转为不可变。
+}
+```
+
+析构逻辑验证：
+
+```rust
+struct MyStruct {
+    data: String,
+    another: MyStruct2,
+}
+struct MyStruct2 {
+    data: String,
+}
+
+impl Drop for MyStruct2 {
+    fn drop(&mut self) {
+        println!("Dropping MyStruct2 with data: '{}'!", self.data);
+        // 这里可以模拟释放资源，比如关闭文件等
+    }
+}
+
+impl Drop for MyStruct {
+    fn drop(&mut self) {
+        println!("Dropping MyStruct with data: '{}'!", self.data);
+        // 这里可以模拟释放资源，比如关闭文件等
+    }
+}
+
+pub fn main() {
+
+    let mut my_vec = vec![MyStruct {
+        data: "Hello, Box!".to_string(), another: MyStruct2 { data: "Hi, Box!".to_string() }
+    }];
+    // my_box 离开 main 函数的作用域
+    println!("End of main function.");
 }
 ```
 
@@ -235,3 +270,5 @@ fn test(c: M) -> M{
 ```
 
 <p class="notice-info">以上分析是基于原对象在栈上分配的情形，如果原对象是堆上分配的，原理应该也差不多。</p>
+
+参考链接🔗：[https://doc.rust-lang.org/reference/destructors.html](https://doc.rust-lang.org/reference/destructors.html)
