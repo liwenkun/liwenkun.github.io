@@ -31,7 +31,7 @@ Rust 所有权规则是如何解决这个问题的呢？它把对象分为可变
 我们知道，编译器是知道栈上每一个变量的生命周期的。对于栈上的每一个变量，如果它是对象的借用者，那么它会在生命周期结束后释放借用，如果是对象的所有者，编译器会在该变量生命周期结束时，调用编译器为对象自动生成的析构函数，析构函数的逻辑是：
 
 1. 如果对象实现了 `Drop` trait，调用它的 `drop` 方法以释放其持有的资源，比如释放连接，关闭文件等。容器类对象除了要释放缓冲区，还要负责析构缓冲区中的每一个对象，rust 提供了一个方法辅助容器类对象回收内部的元素：`drop_in_replace()`，该方法会调用每个元素的析构函数。
-2. 如果对象包含其他对象，按声明顺序执行这些对象的析构函数。
+2. 如果对象包含其他成员对象，按声明顺序执行这些对象的析构函数。
 3. 否则啥也不做，让对象随着栈帧或者外层对象的回收而回收即可。
 
 结合代码体会上述概念：
@@ -111,6 +111,7 @@ fn main() {
 fn change_mutability(mut p: Person) {
     p.age = 13;
     let q = p; // 所有权转移，对象由可变转为不可变。
+    // q.age = 12; // ❌
 }
 ```
 
@@ -126,6 +127,7 @@ struct MyStruct2 {
 }
 
 impl Drop for MyStruct2 {
+    // MyStruct 的析构函数会负责调用其成员对象的析构函数
     fn drop(&mut self) {
         println!("Dropping MyStruct2 with data: '{}'!", self.data);
         // 这里可以模拟释放资源，比如关闭文件等
@@ -140,13 +142,16 @@ impl Drop for MyStruct {
 }
 
 pub fn main() {
-
     let mut my_vec = vec![MyStruct {
-        data: "Hello, Box!".to_string(), another: MyStruct2 { data: "Hi, Box!".to_string() }
+        data: "Hello, World!".to_string(), another: MyStruct2 { data: "Hi, World!".to_string() }
     }];
-    // my_box 离开 main 函数的作用域
     println!("End of main function.");
 }
+```
+输出：
+```shell
+Dropping MyStruct with data: 'Hello, World!'!
+Dropping MyStruct2 with data: 'Hi, World!'!
 ```
 
 ## 相关语义的实现
