@@ -30,7 +30,7 @@
 <meta property="og:description" content="什么是跨源请求先看同源 URL 定义：  如果两个 URL 的协议、端口（如果有指定的话）和主机都相同的话，则这两个 URL 是同源的。这个方案也被称为“协议&#x2F;主机&#x2F;端口元组”，或者直接是“元组”。（“元组”是指一组项目构成的整体，具有双重&#x2F;三重&#x2F;四重&#x2F;五重等通用形式。）  当网页发出请求的 URL 和网页的 URL 是非同源的，我们便说这个请求是">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2024-04-04T00:00:00.000Z">
-<meta property="article:modified_time" content="2025-12-18T11:19:18.185Z">
+<meta property="article:modified_time" content="2025-12-18T13:03:45.964Z">
 <meta property="article:author" content="Chance">
 <meta property="article:tag" content="前端">
 <meta name="twitter:card" content="summary">
@@ -236,7 +236,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-18 11:19:18" itemprop="dateModified" datetime="2025-12-18T11:19:18+00:00">2025-12-18</time>
+                <time title="修改时间：2025-12-18 13:03:45" itemprop="dateModified" datetime="2025-12-18T13:03:45+00:00">2025-12-18</time>
               </span>
 
           
@@ -252,7 +252,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.4k</span>
+              <span>5.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -292,18 +292,18 @@
 <li>获取自己另一个域名下的 <code>&lt;img&gt;</code> 并将其绘制在 <code>canvas</code> 上，随后需要将其转储为图片。</li>
 </ol>
 <p>上面两种场景中，虽然存在跨源请求，但是两个 “源” 归属同一所有者，它们是可以互相信任的。然而同源策略不分敌友的一刀切政策，使得看上去很简单的需求难以实现。为了绕过这种限制，程序员摸索出了很多奇技淫巧，比较常见的就是 Jsonp，它利用的是 <code>script</code> 可以跨源的特性。我们看看它是如何让跨源请求 “绝处逢生” 的。</p>
-<h2 id="使用-JSONP-突破同源策略"><a href="#使用-JSONP-突破同源策略" class="headerlink" title="使用 JSONP 突破同源策略"></a>使用 JSONP 突破同源策略</h2><p>JSONP 把跨源 Ajax 请求伪装成一个外部 script 资源，这是网页和目标网站之间的“秘密”，浏览器并不知情，因此浏览器会正常发送请求获取该外部脚本。重点来了，目标网站服务器返回的脚本并非普通的静态资源，而是根据请求动态生成的。这段脚本会将响应数据作为参数去调用发送请求时指定的回调函数，从而让客户端收到请求结果。这么说可能有点难理解，我们通过具体例子来说明。</p>
+<h2 id="使用-JSONP-突破同源策略"><a href="#使用-JSONP-突破同源策略" class="headerlink" title="使用 JSONP 突破同源策略"></a>使用 JSONP 突破同源策略</h2><p>JSONP 把跨源 Ajax 请求伪装成一个外部 script 资源，这是网页和目标服务器之间的“秘密”，浏览器并不知情，它会正常发送请求获取该外部脚本。重点来了，目标服务器返回的脚本并非 “静态”，而是根据请求动态生成的。这段脚本会将响应数据作为参数去调用发送请求时指定的回调函数，从而让客户端收到请求结果。这么说可能有点难理解，我们通过具体例子来说明。</p>
 <p>网站 A (<a target="_blank" rel="noopener" href="https://a.com/">https://a.com</a>) 想要发送 <a target="_blank" rel="noopener" href="https://api.b.com/get-user-info">https://api.b.com/get-user-info</a> 这样一个请求给服务器 B。由于跨源，请求无法以 Ajax 的形式发送，于是网站 A 的脚本动态地添加了一个 <code>script</code> 标签：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">onGetUserInfoSuccess</span>(<span class="params">data</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(data);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">onGetUserInfoError</span>(<span class="params">e</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(e);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> script = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&#x27;script&#x27;</span>);</span><br><span class="line">script.<span class="property">src</span> = <span class="string">&#x27;https://api.b.com/get-user-info?onsuccess=onGetUserInfoSuccess&amp;onerror=onGetUserInfoError&#x27;</span>;</span><br><span class="line"><span class="variable language_">document</span>.<span class="property">head</span>.<span class="title function_">appendChild</span>(script);</span><br></pre></td></tr></table></figure>
 
 <p>浏览器正常发送了这个外部脚本请求，服务器 B 返回的是：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">onGetUserInfoSuccess</span>(&#123;<span class="string">&quot;Name&quot;</span>: <span class="string">&quot;小明&quot;</span>, <span class="string">&quot;Id&quot;</span>: <span class="number">1823</span>, <span class="string">&quot;Rank&quot;</span>: <span class="number">7</span>&#125;);</span><br></pre></td></tr></table></figure>
 
-<p>浏览器执行上述脚本，将响应数据传给了网页 A 的回调函数 <code>onGetUserInfoSuccess</code>。实际 JSONP 的做法和上述例子有点差异，但原理是一样的。这种跨院请求方案虽然绕过了浏览器的限制，但存在<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/JSONP#%E5%AE%89%E5%85%A8%E5%95%8F%E9%A1%8C">安全隐患</a>，需要目标服务器做好防范措施。</p>
+<p>浏览器执行上述脚本，将响应数据传给了网页 A 的回调函数 <code>onGetUserInfoSuccess</code>。实际上 JSONP 的做法和本例有点差异，但原理类似。这种跨源请求方案虽然绕过了浏览器的限制，但存在<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/JSONP#%E5%AE%89%E5%85%A8%E5%95%8F%E9%A1%8C">安全隐患</a>，需要目标服务器做好防范。</p>
 <p>奇技淫巧也只是权宜之计，大家还是希望能浏览器能原生支持受信任的跨源请求。千呼万唤之下，跨源资源共享（CORS）出现了。</p>
-<h2 id="迎接-CORS"><a href="#迎接-CORS" class="headerlink" title="迎接 CORS"></a>迎接 CORS</h2><p>CORS（跨源资源共享）是对同源策略下敌友不分的一刀切机制的改进。同源策略的问题在于，它假设所有网站都不被域名之外的服务器所信任，这种假设过于简单粗暴。防止敌人混入城堡的正确方式是在城门口配上守卫，对进城的人进行身份验证，而不是把城门焊死。CORS 是如何尽好守卫职责的呢？我们还是将跨源请求分为 Ajax 请求、标签资源请求和表单请求，逐个分析。</p>
-<h3 id="Ajax-请求"><a href="#Ajax-请求" class="headerlink" title="Ajax 请求"></a>Ajax 请求</h3><p>出于对安全性和兼容性的考量，浏览器将 Ajax 请求分为简单请求和非简单请求。简单请求的定义见 MDN 对<a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Guides/CORS#%E7%AE%80%E5%8D%95%E8%AF%B7%E6%B1%82">简单请求的定义</a> ，不满足简单请求定义的便是非简单请求。我们先看非简单请求。</p>
-<h4 id="非简单请求"><a href="#非简单请求" class="headerlink" title="非简单请求"></a>非简单请求</h4><p>如果一个请求被判定为非简单请求，浏览器会在发送正式的跨源请求之前，先发送一个 method 为 <code>OPTION</code> 的 <strong>预检请求</strong> 给目标服务器，询问目标服务器是否允许该网页给它发送跨源请求，若允许，目标服务器便可在响应中表明该许可，浏览器收到后会将正式请求发出，并将请求结果给到网页；若不允许或者干脆不响应，浏览器则不会发送正式请求，跨源请求宣告失败。与此同时，浏览器会在控制台打印 CORS 错误日志，便于开发者排查跨源请求失败的具体原因。</p>
+<h2 id="迎接-CORS（跨源资源共享）"><a href="#迎接-CORS（跨源资源共享）" class="headerlink" title="迎接 CORS（跨源资源共享）"></a>迎接 CORS（跨源资源共享）</h2><p>同源策略的问题在于，它假设所有网站都不被域名之外的服务器所信任，这种假设过于简单粗暴。为了让受信任的网页在安全的前提下，更为方便地获取跨源资源，CORS 对同源策略的一刀切 “懒政” 做了改进。我们将请求分为 Ajax 请求、标签资源请求和表单请求三类，逐个分析。</p>
+<h3 id="Ajax-请求"><a href="#Ajax-请求" class="headerlink" title="Ajax 请求"></a>Ajax 请求</h3><p>出于对安全性和兼容性的考量，CORS 将 Ajax 请求分为简单请求和非简单请求。简单请求的定义见 MDN <a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Guides/CORS#%E7%AE%80%E5%8D%95%E8%AF%B7%E6%B1%82">简单请求的定义</a> ，不满足简单请求定义的便是非简单请求。我们先看非简单请求。</p>
+<h4 id="非简单请求"><a href="#非简单请求" class="headerlink" title="非简单请求"></a>非简单请求</h4><p>如果一个请求被判定为非简单请求，浏览器会在发送正式的跨源请求之前，先发送一个 method 为 <code>OPTION</code> 的 <strong>预检请求</strong> 给目标服务器，询问目标服务器是否允许该网页给它发送跨源请求，若允许，目标服务器则在响应中表明该许可，浏览器收到许可后会将正式请求发出，并将请求结果给到网页；若不允许或者干脆不响应，浏览器则不会发送正式请求，跨源请求宣告失败。与此同时，浏览器会在控制台打印 CORS 错误日志，便于开发者排查跨源请求失败的具体原因。</p>
 <p>所谓询问服务器，其实就是在预检请求的请求中添加 <code>Origin</code> 头和 <code>Access-Control-Request-*</code> 头。其中：</p>
 <ul>
 <li><p><code>Origin</code> 表示请求发起者的源，例如，<a target="_blank" rel="noopener" href="https://foo.com/index.html">https://foo.com/index.html</a> 向 bar.com 发起请求，那么 <code>Origin</code> 就是 <a target="_blank" rel="noopener" href="https://foo.com./">https://foo.com。</a></p>
@@ -315,14 +315,14 @@
 <h4 id="简单请求"><a href="#简单请求" class="headerlink" title="简单请求"></a>简单请求</h4><p>对于简单的 Ajax 请求，浏览器不发送预检请求，而是直接发送正式请求，但服务器必须和响应非简单请求的预检请求一样，在这个正式请求的响应中包含 <code>Access-Control-Allow-*</code> 头，从而表明网页是否被允许读取响应数据，如果允许，浏览器便将响应数据返回给网页，否则丢弃，告诉网页请求失败（实际是请求成功了，只是给网页返回失败结果）。同样地，对于携带了 Cookies 的请求（如 <code>fetch</code> API 的 <code>credentials: &#39;include&#39;</code> 和 <code>XMLHttpRequest</code> 的 <code>withCredentials=true</code> ），服务器需要在响应中额外添加 <code>Access-Control-Allow-Credentails: true</code> 头，且此时 <code>Access-Control-Request-Origin</code>、<code>Access-Control-Request-Headers</code> 等字段的值不允许使用通配符 *，必须为具体值的列表，上述条件任何一个不满足，浏览器都会丢弃响应数据，给网页返回请求失败的结果。</p>
 <p>有几个问题值得探讨：</p>
 <ol>
-<li><p>浏览器为什么要违背同源策略的限制，不加任何限制就将简单请求发送给服务器？没有安全风险吗？</p>
-<p> 简单请求是按照表单请求的特征来定义的，换句话说，简单请求是从 Ajax 中抽出来的、符合表单请求特征的那一类请求。我们知道，在 CORS 出现之前，同源策略就允许发送跨源表单请求，基于这个事实，浏览器假定服务器对于跨源表单请求存在的 CSRF 攻击早有防范，因此对于那些还没准备好迎接 CORS 的服务器而言，不加任何修改便能应对简单请求存在的 CSRF 攻击。从服务器的角度看，两者没有区别，服务器要是防不了简单请求的 CSRF 攻击，它同样防不了表单请求的 CSRF 攻击。简单请求没有引入额外的风险，但简单请求带来的额外的好处是，开发者被允许发送这类 Ajax 请求了，这在同源策略统治时期是不可能的。</p>
+<li><p>浏览器违反同源策略，不加任何限制就将简单请求发送给服务器，不会有安全风险吗？</p>
+<p> 在 CORS 出现之前，同源策略就允许发送跨源表单请求。基于这个事实，浏览器假定服务器对跨源表单请求存在的 CSRF 攻击早有防范。而简单请求是按照表单请求的特征来定义的，换句话说，简单请求是从 Ajax 中划分出来的、符合表单请求特征的那一类请求，在服务器看来，他俩没有任何差别，所以服务器不做任何变更同样能应对简单请求存在的 CSRF 攻击。服务器要是防不了简单请求的 CSRF 攻击，同样防不了表单请求的 CSRF 攻击，简单请求并不会引入额外的风险，因此本质上浏览器并没有违法同源策略。</p>
 </li>
-<li><p>为什么服务器不在响应中添加 <code>Access-Control-Allow-*</code> ，浏览器就不把响应数据返回给网页呢？</p>
-<p> 同源策略下，表单请求虽然能够发送请求，但拿不到结果，因为请求提交后浏览器就会刷新。在 CORS 出现之前，也许存在某些服务器，有意无意中依赖这种行为实现一定程度的安全性。引入 CORS 后，浏览器既然把简单请求作为表单请求的变体，就应当让两者行为及影响保持一致，从而不破坏现有服务器的安全性。于是浏览器就模仿表单请求，阻止网页拿到简单请求的响应，只有在服务器明确表示允许前提下，才将响应返回给网页。</p>
+<li><p>为什么服务器不在响应中添加 <code>Access-Control-Allow-*</code> ，浏览器就不把响应数据返回给网页？</p>
+<p> 同源策略下，表单请求虽然能够发送请求，但拿不到结果，因为请求提交后浏览器就会刷新。在 CORS 出现之前，也许存在某些服务器，有意无意中依赖这种行为实现一定程度的安全性。CORS 既然把简单请求作为表单请求的 “克隆体”，就应当让两者行为保持一致，从而不破坏现有服务器的安全。于是浏览器就模仿表单请求，阻止网页拿到简单请求的响应，除非得到服务器的明确许可。</p>
 </li>
 <li><p>简单请求为什么不发送预检请求？</p>
-<p> 简单请求作为表单请求的变体，直接发送并不会破坏同源策略，发送预检请求只会增加请求延迟。非简单请求就从来没被允许发送过，为了保持兼容，必须先通过预检请求征得服务器的同意才可发送正式请求。</p>
+<p> 简单请求作为表单请求的 “克隆体”，直接发送并不会破坏同源策略，发送预检请求只会增加请求延迟。非简单请求从来没被允许发送过，为了保证安全，必须先通过预检请求征得服务器的同意才可发送正式请求。</p>
 </li>
 </ol>
 <h3 id="标签资源请求"><a href="#标签资源请求" class="headerlink" title="标签资源请求"></a>标签资源请求</h3><p>除了 Ajax，CORS 也对标签触发的跨源请求放开了限制。同源策略下，标签是被允许发送携带 Cookies 的跨源请求的，只是无法读取资源的内容，因此这里所说的限制是指对请求资源的读取限制。放开限制意味着破坏了同源策略，这当然是不行的，安全起见，支持 CORS 的浏览器必须对资源的 “读许可” 附加额外的条件，浏览器给开发者提供了两个选择：</p>
@@ -434,7 +434,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%B7%A8%E6%BA%90%E8%AF%B7%E6%B1%82"><span class="nav-number">1.</span> <span class="nav-text">什么是跨源请求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%AF%B9%E8%B7%A8%E6%BA%90%E8%AF%B7%E6%B1%82%E8%BF%9B%E8%A1%8C%E9%99%90%E5%88%B6"><span class="nav-number">2.</span> <span class="nav-text">为什么要对跨源请求进行限制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%90%8C%E6%BA%90%E7%AD%96%E7%95%A5"><span class="nav-number">3.</span> <span class="nav-text">什么是同源策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-JSONP-%E7%AA%81%E7%A0%B4%E5%90%8C%E6%BA%90%E7%AD%96%E7%95%A5"><span class="nav-number">4.</span> <span class="nav-text">使用 JSONP 突破同源策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%8E%E6%8E%A5-CORS"><span class="nav-number">5.</span> <span class="nav-text">迎接 CORS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Ajax-%E8%AF%B7%E6%B1%82"><span class="nav-number">5.1.</span> <span class="nav-text">Ajax 请求</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%9E%E7%AE%80%E5%8D%95%E8%AF%B7%E6%B1%82"><span class="nav-number">5.1.1.</span> <span class="nav-text">非简单请求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E8%AF%B7%E6%B1%82"><span class="nav-number">5.1.2.</span> <span class="nav-text">简单请求</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%87%E7%AD%BE%E8%B5%84%E6%BA%90%E8%AF%B7%E6%B1%82"><span class="nav-number">5.2.</span> <span class="nav-text">标签资源请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A8%E5%8D%95%E8%AF%B7%E6%B1%82"><span class="nav-number">5.3.</span> <span class="nav-text">表单请求</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">6.</span> <span class="nav-text">结语</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%B7%A8%E6%BA%90%E8%AF%B7%E6%B1%82"><span class="nav-number">1.</span> <span class="nav-text">什么是跨源请求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%AF%B9%E8%B7%A8%E6%BA%90%E8%AF%B7%E6%B1%82%E8%BF%9B%E8%A1%8C%E9%99%90%E5%88%B6"><span class="nav-number">2.</span> <span class="nav-text">为什么要对跨源请求进行限制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%90%8C%E6%BA%90%E7%AD%96%E7%95%A5"><span class="nav-number">3.</span> <span class="nav-text">什么是同源策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-JSONP-%E7%AA%81%E7%A0%B4%E5%90%8C%E6%BA%90%E7%AD%96%E7%95%A5"><span class="nav-number">4.</span> <span class="nav-text">使用 JSONP 突破同源策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%8E%E6%8E%A5-CORS%EF%BC%88%E8%B7%A8%E6%BA%90%E8%B5%84%E6%BA%90%E5%85%B1%E4%BA%AB%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">迎接 CORS（跨源资源共享）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Ajax-%E8%AF%B7%E6%B1%82"><span class="nav-number">5.1.</span> <span class="nav-text">Ajax 请求</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%9E%E7%AE%80%E5%8D%95%E8%AF%B7%E6%B1%82"><span class="nav-number">5.1.1.</span> <span class="nav-text">非简单请求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E8%AF%B7%E6%B1%82"><span class="nav-number">5.1.2.</span> <span class="nav-text">简单请求</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%87%E7%AD%BE%E8%B5%84%E6%BA%90%E8%AF%B7%E6%B1%82"><span class="nav-number">5.2.</span> <span class="nav-text">标签资源请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A8%E5%8D%95%E8%AF%B7%E6%B1%82"><span class="nav-number">5.3.</span> <span class="nav-text">表单请求</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">6.</span> <span class="nav-text">结语</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
