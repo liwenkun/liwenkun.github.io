@@ -30,7 +30,7 @@
 <meta property="og:description" content="Android LaunchMode 总结Android 中的 LaunchMode 是一个比较基础的知识点，关于这块之前每次都是先用现学，然后学了之后又忘了，现在把 LaunchMode 的规律记录下来以备后用。 需要了解的知识点在讲 LaunchMode 之前，需要了解一下几点知识：  task 有属性 affinity，Activity 有属性 taskAffinity 可以存在两个 aff">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2017-11-07T00:00:00.000Z">
-<meta property="article:modified_time" content="2025-12-18T23:56:56.982Z">
+<meta property="article:modified_time" content="2025-12-19T17:54:15.889Z">
 <meta property="article:author" content="Chance">
 <meta property="article:tag" content="Android">
 <meta property="article:tag" content="LaunchMode">
@@ -237,7 +237,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-18 23:56:56" itemprop="dateModified" datetime="2025-12-18T23:56:56+00:00">2025-12-18</time>
+                <time title="修改时间：2025-12-19 17:54:15" itemprop="dateModified" datetime="2025-12-19T17:54:15+00:00">2025-12-19</time>
               </span>
 
           
@@ -253,7 +253,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.5k</span>
+              <span>1.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -279,29 +279,39 @@
 <li>可以存在两个 affinity 一样的 task；</li>
 <li>一个 Activity 的 taskAffnity 默认值为 package name，如果有指定值就会设为指定值<span id="more"></span></li>
 </ol>
-<h2 id="LuanchMode-规律总结"><a href="#LuanchMode-规律总结" class="headerlink" title="LuanchMode 规律总结"></a>LuanchMode 规律总结</h2><p>Manifest 中注册了两个 Activity，它们的类型分别为 AActivity 和 BActivity。假设 AActivity 的 taskAffinity 为 a，现在通过 BActivity 的一个实例 B 启动 AActivity：</p>
-<h4 id="如果此时-AActivity-的实例不存在于任何-task-中，那么："><a href="#如果此时-AActivity-的实例不存在于任何-task-中，那么：" class="headerlink" title="如果此时 AActivity 的实例不存在于任何 task 中，那么："></a>如果此时 AActivity 的实例不存在于任何 task 中，那么：</h4><ul>
-<li>如果  AActivity 的启动模式为 singleTask， 那么先会找是否存在 affinity 为 a 的 task，如果存在并且这个 task 中的 Activity 不是 singleInstance，那么就在那个 task 中创建并启动一个 AActivity 的实例 ；如果不存在，那么新建一个 affinity 为 a  的 task，然后在新建的 task 中创建并启动一个 AActivity 的实例；</li>
-<li>如果 AActivity 的启动模式为 singleInstance，那么无论是否存在 affinity 为 a 的 task ，总会新建一个 affinity 也为 a 的 task，并在这个新建的 task 中创建并启动一个 AActivity 的实例；</li>
-<li>如果 Activity 的启动模式为 standard （默认值) 或者 singleTop，那么就要看 BActivity 的启动模式了：<ul>
-<li>如果 BActivity 的启动模式不为 singleInstance 的话，那么  AActivity  的 taskAffinity 属性会被忽略，然后就在 B 所在的 task 中创建并启动一个 AActivity 的实例；</li>
-<li>如果  BActivity 的启动模式为 singleInstance 的话，那么 AActivity 的 taskAffinity 属性不会被忽略，此时系统就会去找一个 affinity 为 a 的 task：如果能找到并且这个 task 中的 Activity 不为 singleInstance，那么就会在那个 task 中创建并启动一个 AActivity 的实例；否则新建一个 affinity 为 a 的 task，然后在这个新建的 task 中创建并启动启动一个 AActivity 的实例。</li>
+<h2 id="LuanchMode-规律总结"><a href="#LuanchMode-规律总结" class="headerlink" title="LuanchMode 规律总结"></a>LuanchMode 规律总结</h2><p>假设 FooActivity 的 taskAffinity 为 a，现在通过 Activity bar 启动 FooActivity：</p>
+<ul>
+<li>如果 FooActivity 是 singleInstance，那么就会寻找一个 affinity 为 a 且其中的 Activity 为 FooActivity 的 task:<ul>
+<li>如果能找到，就调用 task 中 FooActivity 的 onNewIntent() 方法；</li>
+<li>否则，新建一个 affinity 为 a 的 task，然后在新建的 task 中创建并启动一个 FooActivity 的实例；</li>
+</ul>
+</li>
+<li>否则，看 Activity bar 是否是 singleInstance：<ul>
+<li>如果是，就会寻找一个 affinity 为 a 且其中的 Activity 不为 singleInstance 的 task。<ul>
+<li>如果能找到，就看 FooActivity 的启动模式：<br>- 如果 FooActivity 启动模式为 singleTop：<br>    - 如果 task 栈顶为 FooActivity，就调用该 FooActivity 的 onNewIntent 方法；<br>    - 否则，就在那个 task 中创建并启动一个 FooActivity 的实例；<br>- 如果 FooActivity 启动模式为 singleTask:<br>    - 如果 task 内存在 FooActivity，会先把该 task 中位于 FooActivity 上方的所有 Activity 清理出栈，然后调用该 FooActivity  的 onNewIntent() 方法；<br>    - 否则，就在那个 task 中创建并启动一个 FooActivity 的实例；<br>- 如果 FooActivity 启动模式为 standard，就在 task 中创建并启动一个 FooActivity 的实例；</li>
+<li>否则，新建一个 affinity 为 a 的 task，然后在新建的 task 中创建并启动一个 FooActivity 的实例；</li>
+</ul>
+</li>
+<li>否则，就看 FooActivity 的启动模式：<ul>
+<li>如果 FooActivity 启动模式为 singleTop，忽略 FooActivity 的 affinity 属性，直接将当前 task 作为目标 task<ul>
+<li>如果 bar 的类型为 FooActivity，那么直接调用 bar 的 onNewIntent() 方法；</li>
+<li>否则，直接在当前 task 上创建并启动一个 FooActivity 的实例；</li>
+</ul>
+</li>
+<li>如果 FooActivity 启动模式为 standard，忽略 FooActivity 的 affinity 属性，直接在当前 task 上创建并启动一个 FooActivity 的实例；</li>
+<li>如果 FooActivity 启动模式为 singleTask，就会寻找一个 affinity 为 a 且其中的 Activity 不为 singleInstance 的 task：<ul>
+<li>如果能找到：<ul>
+<li>如果 task 栈内有 FooActivity，会先把该 task 中位于 FooActivity 上方的所有 Activity 清理出栈，然后调用该 FooActivity  的 onNewIntent() 方法；</li>
+<li>否则就在那个 task 中创建并启动一个 FooActivity 的实例；</li>
+</ul>
+</li>
+<li>否则，新建一个 affinity 为 a 的 task，然后在新建的 task 中创建并启动一个 FooActivity 的实例；</li>
 </ul>
 </li>
 </ul>
-<h4 id="如果-AActivity-的实例已经存在于某个任务栈中，那么："><a href="#如果-AActivity-的实例已经存在于某个任务栈中，那么：" class="headerlink" title="如果 AActivity 的实例已经存在于某个任务栈中，那么："></a>如果 AActivity 的实例已经存在于某个任务栈中，那么：</h4><ul>
-<li>如果 AActivity 的启动模式为 standard ，那么就要看 BActivity 的启动模式了：<ul>
-<li>如果 BActivity 的启动模式不为 singleInstance 的话，那么  AActivity  的 taskAffinity 属性会被忽略，然后就会在 B 所在的 task 中启动；</li>
-<li>如果  BActivity 的启动模式为 singleInstance 的话，那么 AActivity 的 taskAffinity 属性不会被忽略，系统会去找一个 affinity 为 a 的 task：如果能找到并且这个 task 中的 Activity 不为 singleInstance，那么就会在那个 task 中创建并启动一个 AActivity 的实例；否则新建一个 affinity 为 a 的 task，然后在这个新建的 task 中创建并启动一个  AActivity 的实例。</li>
+</li>
 </ul>
 </li>
-<li>如果 AActivity 的启动模式为 singleTop 的话 ，同样要看 BActivity 的启动模式：<ul>
-<li>如果 BActivity 的启动模式不为 singleInstance 的话，那么  AActivity  的 taskAffinity 属性会被忽略，然后就会在  B 所在的 task 中启动；但是，如果 BActivity &#x3D; AActivity，那么就不会创建并启动一个 AActivity 的实例了，此时只会调用 B 的 onNewIntent 方法；</li>
-<li>如果 BActivity 的启动模式为 singleInstance 的话，那么 AActivity 的 taskAffinity 属性不会被忽略，此时系统就会去找一个 affinity 为 a 的 task：如果能找到并且这个 task 中的 Activity 不为 singleInstance，那么就会在那个 task 中启动；但是如果这个 task 的栈顶已经有一个 AActivity 的实例 A，就不会再次创建并启动另一个 AActivity 的实例了，此时只会调用栈顶的这个 A 的 onNewIntent() 方法；</li>
-</ul>
-</li>
-<li>如果 AActivity 的启动模式为 singleInstance，那么一定会找到一个 affinity 为 a 的 task（为什么？因为我们假设 AActivity 的实例已经存在于某个 task 中，而根据 singleInstance 的特点，这个 task 的 affinity 一定为 a），并且该 task 中只有一个 AActivity 的实例 A，此时不会再次创建并启动另一个 AActivity 的实例，此时只会调用  A 的 onNewIntent() 方法；</li>
-<li>如果  AActivity 的启动模式为 singleTask， 那么先一定会找到 affinity 为 a 的 task（为什么？因为我们已经假设 AActivity 的实例已经存在于某个 task 中，而根据 singleTask 的特点，这个 task 的 affinity 一定为 a），并且该栈中已经存在一个 AActivity 的实例 A，此时会把该 task 中位于 A 上方的所有 Activity 清理出栈，然后调用 A  的 onNewIntent() 方法。</li>
 </ul>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>关于 LaunchMode，光靠阅读文章是不能深刻理解其中规律的。大家可以尝试自己写一些各种启动模式的 Activity，让他们相互启动，再通过 adb shell dumpsys 这个命令查看任务栈以及其中的 Activity，这样应该能很快理解 LaunchMode 的规律的，也能记得更牢。</p>
 
@@ -407,7 +417,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android-LaunchMode-%E6%80%BB%E7%BB%93"><span class="nav-number">1.</span> <span class="nav-text">Android LaunchMode 总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9C%80%E8%A6%81%E4%BA%86%E8%A7%A3%E7%9A%84%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">需要了解的知识点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LuanchMode-%E8%A7%84%E5%BE%8B%E6%80%BB%E7%BB%93"><span class="nav-number">1.2.</span> <span class="nav-text">LuanchMode 规律总结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E6%AD%A4%E6%97%B6-AActivity-%E7%9A%84%E5%AE%9E%E4%BE%8B%E4%B8%8D%E5%AD%98%E5%9C%A8%E4%BA%8E%E4%BB%BB%E4%BD%95-task-%E4%B8%AD%EF%BC%8C%E9%82%A3%E4%B9%88%EF%BC%9A"><span class="nav-number">1.2.0.1.</span> <span class="nav-text">如果此时 AActivity 的实例不存在于任何 task 中，那么：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C-AActivity-%E7%9A%84%E5%AE%9E%E4%BE%8B%E5%B7%B2%E7%BB%8F%E5%AD%98%E5%9C%A8%E4%BA%8E%E6%9F%90%E4%B8%AA%E4%BB%BB%E5%8A%A1%E6%A0%88%E4%B8%AD%EF%BC%8C%E9%82%A3%E4%B9%88%EF%BC%9A"><span class="nav-number">1.2.0.2.</span> <span class="nav-text">如果 AActivity 的实例已经存在于某个任务栈中，那么：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android-LaunchMode-%E6%80%BB%E7%BB%93"><span class="nav-number">1.</span> <span class="nav-text">Android LaunchMode 总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9C%80%E8%A6%81%E4%BA%86%E8%A7%A3%E7%9A%84%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">需要了解的知识点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LuanchMode-%E8%A7%84%E5%BE%8B%E6%80%BB%E7%BB%93"><span class="nav-number">1.2.</span> <span class="nav-text">LuanchMode 规律总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -493,13 +503,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">264k</span>
+    <span title="站点总字数">263k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">4:01</span>
+    <span title="站点阅读时长">3:59</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
