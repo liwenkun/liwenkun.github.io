@@ -30,13 +30,13 @@ Android 中的 LaunchMode 是一个比较基础的知识点，关于这块之前
 - 否则，看 Activity bar 是否是 singleInstance：
     - 如果是，就会寻找一个 affinity 为 a 且其中的 Activity 不为 singleInstance 的 task。
         - 如果能找到，就看 FooActivity 的启动模式：
-              - 如果 FooActivity 启动模式为 singleTop：
-                  - 如果 task 栈顶为 FooActivity，就调用该 FooActivity 的 onNewIntent 方法；
-                  - 否则，就在那个 task 中创建并启动一个 FooActivity 的实例；
-              - 如果 FooActivity 启动模式为 singleTask:
-                  - 如果 task 内存在 FooActivity，会先把该 task 中位于 FooActivity 上方的所有 Activity 清理出栈，然后调用该 FooActivity  的 onNewIntent() 方法；
-                  - 否则，就在那个 task 中创建并启动一个 FooActivity 的实例；
-              - 如果 FooActivity 启动模式为 standard，就在 task 中创建并启动一个 FooActivity 的实例；
+            - 如果 FooActivity 启动模式为 singleTop：
+                - 如果 task 栈顶为 FooActivity，就调用该 FooActivity 的 onNewIntent 方法；
+                - 否则，就在那个 task 中创建并启动一个 FooActivity 的实例；
+            - 如果 FooActivity 启动模式为 singleTask:
+                - 如果 task 内存在 FooActivity，会先把该 task 中位于 FooActivity 上方的所有 Activity 清理出栈，然后调用该 FooActivity  的 onNewIntent() 方法；
+                - 否则，就在那个 task 中创建并启动一个 FooActivity 的实例；
+            - 如果 FooActivity 启动模式为 standard，就在 task 中创建并启动一个 FooActivity 的实例；
         - 否则，新建一个 affinity 为 a 的 task，然后在新建的 task 中创建并启动一个 FooActivity 的实例；
     - 否则，就看 FooActivity 的启动模式：
         - 如果 FooActivity 启动模式为 singleTop，忽略 FooActivity 的 affinity 属性，直接将当前 task 作为目标 task
