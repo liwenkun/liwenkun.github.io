@@ -60,7 +60,7 @@
 <meta property="og:image" content="https://liwenkun.github.io/img/in-post/post_install_openwrt_with_raspi_3bplus/image-20240327163736-1p10m54.png">
 <meta property="og:image" content="https://liwenkun.github.io/img/in-post/post_install_openwrt_with_raspi_3bplus/image-20240327174028-zp05qsw.png">
 <meta property="article:published_time" content="2024-03-29T00:00:00.000Z">
-<meta property="article:modified_time" content="2025-12-28T20:21:41.833Z">
+<meta property="article:modified_time" content="2025-12-28T20:25:30.714Z">
 <meta property="article:author" content="Chance">
 <meta property="article:tag" content="折腾">
 <meta name="twitter:card" content="summary">
@@ -267,7 +267,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-28 20:21:41" itemprop="dateModified" datetime="2025-12-28T20:21:41+00:00">2025-12-28</time>
+                <time title="修改时间：2025-12-28 20:25:30" itemprop="dateModified" datetime="2025-12-28T20:25:30+00:00">2025-12-28</time>
               </span>
 
           
@@ -419,7 +419,7 @@
 <p>编辑完成后，点击下面的 <kbd>Apply Settings</kbd> ，这时候 OpenClash 会重启，重启完之后，不出意外的话，这时候再让 switch 连上 OpenWrt，下载速度应该快到飞起。当然，前提是你的线路本身足够快 : ) 。</p>
 <p>OpenWrt 还有很多可以折腾的地方，可以换语言，换主题，装插件。这个我就不再细说了，大家可以去网上搜索教程。我反正是折腾了一圈，最后还用回了官方的主题。还是官方主题用起来顺手，特别是顶部菜单的设计，鼠标悬浮就能展开二级菜单，有些主题菜单在侧边栏，需要点击一级菜单才能展开二级菜单，有点麻烦。</p>
 <p>如果你还是想继续折腾，折腾之前不妨先接着往下看。</p>
-<h1 id="扩容和备份"><a href="#扩容和备份" class="headerlink" title="扩容和备份"></a>扩容和备份</h1><h2 id="扩容"><a href="#扩容" class="headerlink" title="扩容"></a>扩容</h2><p class="notice-warn">后来我才知道下面这种方法只对 rootfs 是 ext4 的固件有效，如果 rootfs 是 squashfs + overlay，就不起作用了。如果固件的 rootfs 是 squashfs + overlay 文件系统，请参考这篇文章进行扩容：<a target="_blank" rel="noopener" href="https://www.techkoala.net/openwrt_resize/">OpenWRT overlay 空间扩容
+<h1 id="扩容和备份"><a href="#扩容和备份" class="headerlink" title="扩容和备份"></a>扩容和备份</h1><h2 id="扩容"><a href="#扩容" class="headerlink" title="扩容"></a>扩容</h2><p class="notice-warn">后来我才知道下面这种方法只对 rootfs 是 ext4 的固件有效，如果固件的 rootfs 是 squashfs + overlay ，请参考这篇文章进行扩容：<a target="_blank" rel="noopener" href="https://www.techkoala.net/openwrt_resize/">OpenWRT overlay 空间扩容
 </a>，备用连接：<a target="_blank" rel="noopener" href="https://web.archive.org/web/20250724024336/https://www.techkoala.net/openwrt_resize/">OpenWRT overlay 空间扩容 - WebArchive</a></p>
 
 <p>不管你的 SD 卡有多大，烧完 OpenWrt 后，rootfs 分区也只剩下几十 M 的空间，折腾的时候极有可能会遇到磁盘空间不足的情况。因此我们先对 OpenWrt 做一下扩容，先把它扩到 1G。</p>
