@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      探究 Kotlin 协程
+title:      探究 Kotlin 协程中的状态机
 subtitle:  
 date:       2024-04-08
 author:     "Chance"
@@ -12,7 +12,7 @@ tags:
 
 # 前言
 
-Kotlin 中的协程是无栈协程（话说 Kotlin 能实现有栈线程吗🤔），网上很多文章都说无栈协程一般都是通过状态机实现的，刚开始听到这个状态机的时候觉得有点玄乎，今天打算利用反编译工具并结合协程库源码，来探究一下 Kotlin 协程实现原理。
+Kotlin 中的协程是无栈协程（话说 Kotlin 能实现有栈线程吗🤔），网上很多文章都说无栈协程一般都是通过状态机实现的，刚开始听到这个状态机的时候觉得有点玄乎，今天打算利用反编译工具并结合协程库源码，来探究一下 Kotlin 是如何通过状态机实现协程的。
 
 # 从一个简单的示例开始
 
@@ -137,9 +137,9 @@ public actual fun <R, T> (suspend R.() -> T).createCoroutineUnintercepted(
 }
 ```
 
-一般来说代码会走到 if 分支。if 分支调用了 suspend block 的 `create()`​ 方法。这个方法是编译器为 suspend lambda 生成的。接下来我们需要反编译示例代码来进一步探究。
+一般来说代码会走到 if 分支。if 分支调用了 suspend lambda 的 `create()`​ 方法。这个方法是编译器为 suspend lambda 生成的。我们需要反编译代码来进一步探究。
 
-<p class="notice-info">反编译 Kotlin 代码是没法使用传统的反编译工具来完成的，需要在 IDEA 中打开 Kotlin 字节码文件，然后点击 工具 -> Kotlin -> 反编译为  Java 来完成。</p>
+<p class="notice-info">传统的反编译工具没法反编译 Kotlin 代码，要使用 IDEA 自带的工具：打开 Kotlin 字节码文件，然后点击 工具 -> Kotlin -> 反编译为  Java。</p>
 
 ## main
 
@@ -196,7 +196,7 @@ public static final void main() {
    }
 ```
 
-​`runBlocking$default()`​ 是 `runBlocking()`​ 的反编译后的名字。反编译后的代码中，它接收四个参数，后面两个参数暂时不用理会。第一个参数类型为 `CoroutineContext`​，传入的是 `null`​。第二个参数是一个 `Function2`​ 对象，`Function2`​ 是 Kotlin 库中的一个接口，定义如下：
+​`runBlocking$default()`​ 是 `runBlocking()`​ 的反编译后的名字。它接收四个参数，后面两个参数暂时不用理会。第一个参数类型为 `CoroutineContext`​，传入的是 `null`​。第二个参数是一个 `Function2`​ 对象，`Function2`​ 是 Kotlin 库中的一个接口，定义如下：
 
 ```kotlin
 public interface Function2<in P1, in P2, out R> : Function<R> {
@@ -205,21 +205,20 @@ public interface Function2<in P1, in P2, out R> : Function<R> {
 }
 ```
 
-Kotlin 编译器用 `Function1`​，`Function2`​ ... `FuncitonX`​  接口来实现 lambda 表达式，Function 后面的数字表示 lambda 参数的数量。如果 lambda 有 receiver，receiver 会被视为其第一个参数，则 `invoke()`​ 的第一个参数为 receiver，后续参数为 lambda 的实际参数。例如，lambda 表达式  `val a: Int.(Int, Int) -> Int = { x: Int, y: Int -> this + x + y }`​ 会用以下代码来实现：
+Kotlin 编译器用 `Function1`​，`Function2`​ ... `FuncitonX`​  接口来实现 lambda 表达式，Function 后面的数字表示 lambda 参数的数量。如果 lambda 有 receiver，receiver 会被视为其第一个参数，则 `invoke()`​ 的第一个参数为 receiver，后续参数为 lambda 的实际参数。例如，一个带有 receiver 的 lambda 表达式  `val a: Int.(Int, Int) -> Int = { x: Int, y: Int -> this + x + y }`​ 会用类似下面的代码来实现：
 
 ```java
-Function3 a =  new Function3<Integer, Integer, Integer, Object> {
-    /** Invokes the function with the specified arguments. */
-    public final Object invoke(Integer p1, Integer p2, Integer p3) {
+Function3 a =  new Function3<Integer, Integer, Integer, Integer> {
+    public final Integer invoke(Integer p1, Integer p2, Integer p3) {
 		return p1 + p2 + p3;
 	}
 }
 ```
 
-对于 suspend lambda，实现则略有不同，例如对于一个空的 lambda： `val a: suspend () -> Unit = {}`​，实际上生成的对象通常长这样的：
+对于 suspend lambda，实现则略有不同，例如对于一个有 receiver 的 suspend lambda： `val a: suspend Int.() -> Unit = {}`​，实际上生成的对象通常长这样的：
 
 ```java
-class _SuspendLambda extends SuspendLambda implements Function1<Object> {
+class _SuspendLambda extends SuspendLambda implements Function2<Object, Object, Object> {
 
     public final Object invokeSuspend(Object result) {
 		 /* lambda 函数体逻辑，省略 */
@@ -228,24 +227,28 @@ class _SuspendLambda extends SuspendLambda implements Function1<Object> {
     public _SuspendLambda(Continuation completion) {
 		super(0 /* 这个值具体是多少不知道，也不重要，我这里是乱写的 */, completion):
 	}
-    /** Invokes the function with the specified arguments. */
-    public final Object invoke(Continuation completion) {
-		return this.create(completion).invokeSuspend(completion)
-	}
 
-    public Object invoke(Object p1) {
-        return this.invoke((Continuation)p2);
-    }
-		
-    public final Continuation create(completion: Continuation) {
-         return AnnoymousClass(completion));
-    } 
-}
+   public final Continuation create(Object value, Continuation $completion) {
+      return (Continuation)(new <anonymous constructor>($completion));
+   }
+   // 类型具体化后的 invoke
+   public final Object invoke(int receiver, Continuation completion) {
+      // 为什么不直接调用 invokeSuspend，而是重新生成一个实例？
+      return ((<undefinedtype>)this.create(receiver, completion)).invokeSuspend(Unit.INSTANCE);
+   }
+   // Function2 接口方法 invoke
+   public Object invoke(Object receiver, Object completion) {
+      return this.invoke(((Number)p1).intValue(), (Continuation)p2);
+   }
+};
+Function2<Object, Object, Object> a = new Function<>(null);
 ```
 
-Kotlin 会为每一个 suspend lambda 生成一个继承 `SuspendLambda`​ 并实现 `FunctionX`​ 接口的匿名类，并且还给它添加了一个 `Cotinuation`​ 类型的参数（这个参数具体什么含义，我们后面会讲）。此外，编译器还会为它额外生成 `invokeSuspend()`​ ，`create()`​ 和 `invoke()`​ 这三个方法。`invokeSuspend()`​ 中包含的是 lambda 函数体的逻辑，`create()`​ 则是用来创建该类的一个新实例，`invoke()`​ 重载方法貌似有点多余，只是对参数类型具体化了一下而已。
+和普通 lambda 不一样的地方在于，kotlin 为 suspend lambda 生成的 invoke() 方法多了一个额外的 `Cotinuation`​ 类型的参数（后面会讲到，它是一个状态机）。此外，编译器还会为它额外生成 `invokeSuspend()`​ ，`create()`​ 和一个 `invoke()`​ 重载方法。`invokeSuspend()`​ 中包含的是 lambda 函数体的逻辑，`create()`​ 则是用来创建该类的一个新实例，`invoke()`​ 重载方法貌似有点多余，只是对参数类型具体化了一下而已。
 
-我们现在回过头来看 `runBlocking`​ 的 suspned lambda 参数反编译后的代码：
+<p class="notice-success">为什么 `invoke()` 方法不直接调用 `invokeSuspend()`，而是要多此一举重新生成一个实例再去调用？因为 suspend lambda 实际上被编译成了一个状态机，一个状态机实例维护的是一次 suspend lambda 执行期间的状态，虽然很多时候我们创建的 lambda 实例都是匿名的，用完即弃（比如我们给 `runBlocking()` 传入的 suspend lambda），但一个实例也可以多次调用（比如多次调用 `a()`），为了避免同一个实例多次调用导致状态机内部状态混乱，Kotlin 会在每次调用时生成一个全新的实例。a 虽然本身是一个 suspend lambda 实例，但它在这里的角色更像是一个 suspend lambda 的实例工厂。</p>
+
+现在回过头来看 `runBlocking`​ 的 suspned lambda 参数反编译后的代码：
 
 ```java
 new Function2((Continuation)null) {
@@ -296,11 +299,11 @@ new Function2((Continuation)null) {
    }
 ```
 
-它便是编译器为我们生成的 `SuspendLambda` 匿名子类对象，后续我会用 `_SuspendLambda`​ 表示这个匿名子类。
+它就是编译器为我们生成的 `SuspendLambda` 匿名子类对象，后续我会用 `_SuspendLambda`​ 代指这个匿名子类。
 
-<p class="notice-info">反编译器没能展示出这个匿名类和 SuspendLambda 的继承关系，但可以通过在 runBlocking() 添加断点得知 suspend lambda 最终确实被编译成了 SuspendLambda 的一个匿名子类。</p>
+<p class="notice-info">反编译器没能展示出这个匿名类和 SuspendLambda 的继承关系，通过在 runBlocking() 中添加断点可以得知 suspend lambda 最终确实被编译成了 SuspendLambda 的一个匿名子类。</p>
 
-细心的你会发现不一样的地方，就是 `invoke()`​ 多了一个类型为 `CoroutineScope`​ 的参数。这是因为 `runBlocking()`​ 的 suspend lambda 参数有 receiver，前面讲过，如果 lambda 有 receiver， receiver 会被视为 lambda 的第一个参数。
+`_SuspendLambda` 的 `invoke()`​ 有两个参数，第一个参数类型为 `CoroutineScope`​，它是 suspend lambda 的 receiver。
 
 回过头看看 `createCoroutineUnintercepted`​：
 
@@ -321,12 +324,12 @@ public actual fun <R, T> (suspend R.() -> T).createCoroutineUnintercepted(
 }
 ```
 
-​`this`​ 是 suspend lambda，前面说了，它是一个 `_SuspendLambda`​ 对象，而 `_SuspendLambda`​ 的继承链是：`_SuspendLambda`​ -> `SuspendLambda` -> `ContinuationImpl`​ -> `BaseContinuationImpl`​ -> `Continuation`​，因此代码会进入 `if`​ 分支。`if`​ 分支很简单，就是调用 `_SuspendLambda` 的 `create()`​ 方法来生成该类的一个新实例，前面说过，`create()` 方法是编译器为 `_SuspendLambda` 生成的。
+​`this`​ 是 suspend lambda，前面说了，它是一个 `_SuspendLambda`​ 对象，`_SuspendLambda`​ 的继承链是：`_SuspendLambda`​ -> `SuspendLambda` -> `ContinuationImpl`​ -> `BaseContinuationImpl`​ -> `Continuation`​，因此代码会进到 `if`​ 分支，调用 `_SuspendLambda` 的 `create()`​ 方法返回该它的一个新实例。
 
 <p class="notice-info">else​ 分支的逻辑是： 当编译器为 suspend lambda 生成的对象实现了 Function2​ 接口并非继承自 BaseContinuationImpl ​时，将其包装成 Continuation ​再返回。什么时候会走到 else 分支目前我并不清楚，因为目前为止我发现 suspend lambda 都是继承自 BaseContinuationImpl。​</p>
 
 
-往前看 `startCoroutineCancellable()`​：
+回到上层函数 `startCoroutineCancellable()`​：
 
 ```kotlin
 internal fun <R, T> (suspend (R) -> T).startCoroutineCancellable(
@@ -338,7 +341,7 @@ internal fun <R, T> (suspend (R) -> T).startCoroutineCancellable(
     }
 ```
 
-​`intercepted()`​ 是 Kotlin 用来实现上下文切换的，这个我们先不管，因为我们的示例并未涉及协程的上下文切换，可以认为这个方法不包含任何逻辑，只是简单地返回对象本身。重点是 `resumeCancellableWith()`​ ：
+​`intercepted()`​ 用来将协程放到其所关联的调度器中运行，这个我们先不管，可以认为这个方法不包含任何逻辑，只是简单地返回对象本身。重点是 `resumeCancellableWith()`​ ：
 
 ```kotlin
 public fun <T> Continuation<T>.resumeCancellableWith(
@@ -350,7 +353,7 @@ public fun <T> Continuation<T>.resumeCancellableWith(
 }
 ```
 
-涉及上下文切换时才会走到 `is DispatchedContinuation`​分支，因此程序会进入 `else`​ 分支，`else`​ 分支调用的是 `Continuation`​ 的 `resumeWith()`​，这个方法在 `Continuation`​ 接口定义：
+实际上代码会进入到 `is DispatchedContinuation ->` 分支，但简单起见，我们假装程序会进入 `else`​ 分支，两个分支逻辑总体差不多，只是前者包含了调度相关的逻辑，但这不是我们的重点，我们重点是搞清楚协程中的状态机是怎么回事。`else`​ 分支调用的是 `Continuation`​ 的 `resumeWith()`​，这个方法在 `Continuation`​ 接口定义：
 
 ```kotlin
 public interface Continuation<in T> {
@@ -367,17 +370,22 @@ public interface Continuation<in T> {
 }
 ```
 
-再进一步探索之前，我们先得了解一下协程中的 `Continuation` ​是什么东西。看下维基百科对协程的定义：
+再进一步探索之前，我们先得了解一下协程中的 `Continuation` ​是什么东西。先从维基百科对协程的定义入手：
 
 > **协程**（英语：coroutine）是计算机程序的一类组件，推广了[协作式多任务](https://zh.wikipedia.org/wiki/%E5%8D%8F%E4%BD%9C%E5%BC%8F%E5%A4%9A%E4%BB%BB%E5%8A%A1 "协作式多任务")的[子例程](https://zh.wikipedia.org/wiki/%E5%AD%90%E4%BE%8B%E7%A8%8B "子例程")，允许执行被挂起与被恢复
 
-​`Continuation`​ 正是 Kotlin 用来实现协程 **允许执行被挂起与被恢复** 这一语义的。`Continuation`​ 逻辑上是一个栈式结构，它用来模拟 suspend 方法（包括 suspend lambda）的调用栈，为什么需要模拟 suspend 方法的调用栈？我们知道，非 suspend 方法的调用栈是由虚拟机维护的，也就是我们所熟悉的栈帧，但是虚拟机并不会为 suspend 方法生成栈帧，这是因为 suspend 方法的调用是异步的，虚拟机的世界中，并没有异步方法调用的概念，它属于 Kotlin 语言自己的语义范畴，Kotlin 编译器必须自己负责实现这个语义。
+​`Continuation`​ 正是 Kotlin 用来实现协程 **允许执行被挂起与被恢复** 这一语义的。
+我们知道，每个线程都有自己的虚拟机栈，栈帧用来存储方法执行时的上下文，方法被调用，栈帧建立，方法返回，栈帧销毁。协程中的方法可能是异步的，可能执行到中途就要挂起。但虚拟机的世界里，并不知道什么是异步方法，也不知道什么是挂起，它只会一口气把方法执行完，把栈帧销毁，然后执行其他方法。专家们想到了两种方案来解决这个难题：
+1. 每个协程有一个专属栈，协程挂起的时候，找个地方把协程的栈保存起来，恢复的时候，再把栈恢复。
+2. 不为协程分配专属栈，而是为协程中每一个异步方法维护一个状态机，让状态机保存异步方法的上下文，状态机会根据当前状态决定从哪个挂起点接着执行。
 
-Kotlin 实现这个语义的方案是，编译时为每一个 suspend 方法生成一个与其相关联的 `Continuation`​ 对象（一般是 `BaseContinuationImpl` 的子类对象），由这个对象负责保存 suspend 方法的上下文，同时会为其生成一个 `invokeSuspend()` 方法，然后把 suspend 方法体的逻辑塞进这个 `invokeSuspend()` 方法中。编译器逻辑上会把一个 suspend 方法分割成多段分步执行，具体来说是：每当遇到对其他 suspend 方法的调用点时，当前 suspend 方法便会被挂起（暂停执行），其上下文会保存到关联的 `Continuation`​对象中，后续可调用其 `resumeWith()`​ 方法（通常由下游 suspend 方法关联的 `Continuation`​ 对象调用）恢复该 suspend 方法的上下文，让它从挂起点接着执行，就这样 “断断续续” 地执行直到当前 suspend 方法执行完毕。当前 suspend 方法执行完毕后，会调用调用栈上游的 suspend 方法关联的 `Continuation`​对象的 `resumeWith()`​方法，从而让上游的 suspend 方法接着执行。上游方法重复这个过程，直到最顶层的 suspend 方法执行完毕。
+采用第一种来方案的叫做有栈协程，采用第二种方案的叫做无栈协程。Kotlin 使用的是第二种方案，这可能和 Kotlin 没法直接操作虚拟机栈有关。
+
+Kotlin 的具体方案是，编译时为每一个 suspend 方法生成一个与其相关联的 `Continuation`​ 对象（一般是 `BaseContinuationImpl` 的子类对象），由这个对象负责保存 suspend 方法的上下文，同时会为其生成一个 `invokeSuspend()` 方法，然后把 suspend 方法体的逻辑塞进这个 `invokeSuspend()` 方法中。编译器逻辑上会把一个 suspend 方法分割成多段分步执行，具体来说是：每当遇到对其他 suspend 方法的调用点（即挂起点）时，当前 suspend 方法便会被挂起（暂停执行），其上下文会保存到关联的 `Continuation`​对象中，后续可调用该对象的 `resumeWith()`​ 方法（通常由下游 suspend 方法关联的 `Continuation`​ 对象调用）恢复对应的 suspend 方法，让它从挂起点接着执行，就这样 “断断续续” 地执行直到当前 suspend 方法执行完毕。当前 suspend 方法执行完毕后，会调用调用栈上游的 suspend 方法关联的 `Continuation`​对象的 `resumeWith()`​方法，从而让上游的 suspend 方法接着执行。上游方法重复这个过程，直到最顶层的 suspend 方法执行完毕。
 
 <p class="notice-success">现在听上去可能会有点抽象，接下来我们看具体实现就明白了。</p>
 
-`resumeWith()` ​是 `Continiuation` ​接口的唯一方法，它在子类 `BaseContinuationImpl` ​中有个 `final` ​实现：
+现在我们接着研究 `resumeWith()` ​方法。`resumeWith()` 是 `Continiuation` ​接口的唯一方法，它在子类 `BaseContinuationImpl` ​中有个 `final` ​实现：
 
 ### BaseContinuationImpl
 
@@ -507,14 +515,14 @@ class _SuspendLambda : SuspendLambda, Function1<Object> {
 }
 ```
 
-`invokeSuspend()` 中的代码就是 `Continuation`​ 将 suspend 方法 “分割成多段” 的直观展现。在我们的例子中，Kotlin 编译器将 suspend lambda 分割成了两段，一段是调用 `fun1()`​ 获取结果，另一段是打印结果。接下来我们就来分析一下，Kotlin 是如何对 suspned lambda 分段执行的。
+`invokeSuspend()` 中的代码就是 `Continuation`​ 将 suspend 方法 “分割成多段” 执行的直观展现。在我们的例子中，Kotlin 编译器将 suspend lambda 分割成了两段，一段是调用 `fun1()`​ 获取结果，另一段是打印结果。接下来我们就来分析一下，Kotlin 是如何对 suspned lambda 分段执行的。
 
 第一次调用`_SuspendLambda`​的 `resumeWith()`​ 方法时，`label`​ 为 `0`​，会走到 `0 -> `​这个分支。这个分支的逻辑如下：
 
 - 将 `label`​ 置位 1，这样下次就会从 `1 ->`​这个分支执行。
 - 调用 `fun1()`​ 获取结果，因为`fun1() `​返回的是 `COROUTINE_SUSPENDED`​ （因为 `fun1()`​ 是 suspend 方法，所以此处返回的就是 `COROUTINE_SUSPENDED`​，原因后面分析 `fun1()`​ 的时候就知道了）， 所以`invokeSuspend()`​ 会从第 13 行返回，`resumeWith()`​拿到这个结果后，suspend lambda 的执行则会终止。
 
-你可能会有疑问，示例代码中的`fun1()`​ 没有参数，为什么这里会传参数？前面说过，当一个 suspend 方法执行完毕后，它会调用上游 suspend 方法关联的 `Continuation`​ 对象的 `resumeWith()`​ 方法来恢复上游方法的执行，因此下游方法必须拿到上游方法的 `Continuation`​ 对象才行。和 suspend lambda 一样，Kotlin 编译器也会为每一个 suspend 方法自动添加一个 `Continuation`​ 类型的参数，目的就是为了让下游方法持有上游方法的 `Continuation`​ 对象。
+你可能会有疑问，示例代码中的`fun1()`​ 没有参数，为什么这里会传参数？前面说过，当一个 suspend 方法执行完毕后，它会调用上游 suspend 方法关联的 `Continuation`​ 对象的 `resumeWith()`​ 方法来恢复上游方法的执行，因此下游方法必须拿到上游方法的 `Continuation`​ 对象才行。因此，和 suspend lambda 一样，Kotlin 编译器也会为每一个 suspend 方法自动添加一个 `Continuation`​ 类型的参数，目的就是为了让下游方法持有上游方法的 `Continuation`​ 对象。
 
 <p class="notice-success">实际上这个参数有多重含义，这个后面会说</p>
 
@@ -852,17 +860,17 @@ private class BlockingCoroutine<T>(
 }
 ```
 
-​`afterCompletion` ​会将 `runBlocking()`​ 的调用者线程唤醒，这通常发生在 `runBlocking()`​调用线程和协程运行线程不相同的情况下，例如我们调用 `runBlocking()`​ 的时候，指定了 `Dispatcher`​:
+​`afterCompletion` ​会将 `runBlocking()`​ 的调用者线程唤醒，这通常发生在调用 `runBlocking()`​ 的线程和协程调度器所在线程不相同的情况下，例如我们调用 `runBlocking()`​ 的时候，指定了 `Dispatcher`​:
 
 ```kotlin
-runBlocking(Dispatchers.IO, {
+runBlocking(Dispatchers.IO) {
 	……
-})
+}
 ```
 
-这会导致 24 行的 `eventLoop`​ 为 `null`​，从而让调用者线程走到 27 行进行无限时长的休眠，以达到阻塞调用者线程的目的。这种情况下就需要协程在 Dispatcher 线程中结束后，唤醒 `runBlocking()` 调用者线程，从而继续执行后面的代码。
+这会导致 24 行的 `eventLoop`​ 为 `null`​，从而让调用者线程走到 27 行进行无限时长的休眠，以达到阻塞调用者线程的目的。这种情况下就需要协程在 Dispatcher 线程中结束后，唤醒 `runBlocking()` 调用者线程，从而继续执行后面的代码，我们可以在协程结束回调 ​`afterCompletion` 中看到这段逻辑。
 
-否则，如果没有指定 `Dispatcher`​，`eventLoop` 便会充当 `Dispatcher`， `eventLoop` 不为 `null`，协程会运行在 `runBlocking()` 调用者线程驱动的 `eventLoop` 中。调用者线程自身会因为在 `while` 循环中持续运行 `eventLoop`​ 自行阻塞。等协程结束后，`eventLoop`​ 会在 26 行退出，因此协程结束的回调​`afterCompletion` 中用 `if` 语句做了一个判断：当协程运行在调用者线程中时，并不需要唤醒调用者线程。
+否则，如果没有指定 `Dispatcher`​，`eventLoop` 便会充当 `Dispatcher`， `eventLoop` 不为 `null`，协程会运行在 `runBlocking()` 调用者线程驱动的 `eventLoop` 中。调用者线程自身会因为在 `while` 循环中持续运行 `eventLoop`​ 自行阻塞。等协程结束后，`eventLoop`​ 会在 26 行退出。
 
 # 总结
 
