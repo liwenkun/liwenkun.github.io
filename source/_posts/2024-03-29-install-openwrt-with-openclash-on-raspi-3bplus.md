@@ -24,7 +24,7 @@ tags:
 话不多说，开干。
 <!-- more -->
 
-<p class="notice-info">如果你的设备也是树莓派 3B+ 且不想折腾的话，我这里准备了一个开箱即用的 OpenWrt 镜像，可以用作二级路由用，如果你是通过 PPPoE 拨号上网，只需要编辑 wan 接口，将其协议改成 PPPoE，填写宽带用户名和密码就行了。镜像自带 OpenClash，分区扩容到了 1G，路由器管理密码和 WiFi 密码都是 12345678，WiFi 名为 OpenWrt，路由器地址为 192.168.110.1。烧录运行后，只需要改下密码和 OpenClash 节点信息就行了。  
+<p class="notice-info">如果你的设备也是树莓派 3B+ 且不想折腾的话，我这里准备了一个开箱即用的 OpenWrt 镜像，可以用作二级路由器。如果你是通过 PPPoE 拨号上网，只需要编辑 wan 接口，将其协议改成 PPPoE，填写宽带用户名和密码就行了。镜像自带 OpenClash，分区扩容到了 1G，路由器管理密码和 WiFi 密码都是 12345678，WiFi 名为 OpenWrt，路由器地址为 192.168.110.1。烧录运行后，只需要改下密码和 OpenClash 节点信息就行了。  
 <a href='https://cloud.189.cn/t/3iqiYfYRnA3e'>天翼云盘（访问码：ba8p）</a> 或者 <a href='https://1drv.ms/u/s!Avz7vfylhEW5kyy60lACnqFGODSC?e=lPcP9v'>OneDrive</a></p>
 
 # 安装 OpenWrt
@@ -146,9 +146,7 @@ tags:
 ![](/img/in-post/post_install_openwrt_with_raspi_3bplus/image-20240326232628-2vbn56z.png)
 ![](/img/in-post/post_install_openwrt_with_raspi_3bplus/image-20240327175032-uhrt175.png)
 
-然后把下面的文本复制到红框中，取代官方的源，点击 <kbd>Save</kbd>。我这里用的是清华的源，速度还可以。
-
- <p class="notice-error">确认一下版本和 CPU 架构是否能和你的设备对上，否则需要修改</p>
+将红框中的 https://downloads.openwrt.org 替换为 https://mirrors.tuna.tsinghua.edu.cn/openwrt ：
 
 ```bash
 src/gz openwrt_core https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/23.05.0/targets/bcm27xx/bcm2710/packages
@@ -158,6 +156,8 @@ src/gz openwrt_packages https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/23
 src/gz openwrt_routing https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/23.05.0/packages/aarch64_cortex-a53/routing
 src/gz openwrt_telephony https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/23.05.0/packages/aarch64_cortex-a53/telephony
 ```
+
+ <p class="notice-error">如果你的设备不是树莓派 3B+，请不要直接复制粘贴上述配置，请自行替换</p>
 
 ## 安装 OpenClash
 
