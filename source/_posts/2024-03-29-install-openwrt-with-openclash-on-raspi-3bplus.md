@@ -226,7 +226,7 @@ OpenWrt 还有很多可以折腾的地方，可以换语言，换主题，装插
 # 扩容和备份
 
 ## 扩容
-<p class="notice-warn">后来我才知道下面这种方法只对 rootfs 是 ext4 的固件有效，如果 rootfs 是 squashfs + overlay，就不起作用了。如果固件的 rootfs 是 squashfs + overlay 文件系统，请参考这篇文章进行扩容：<a href="https://www.techkoala.net/openwrt_resize/">OpenWRT overlay 空间扩容
+<p class="notice-warn">后来我才知道下面这种方法只对 rootfs 是 ext4 的固件有效，如果固件的 rootfs 是 squashfs + overlay ，请参考这篇文章进行扩容：<a href="https://www.techkoala.net/openwrt_resize/">OpenWRT overlay 空间扩容
 </a>，备用连接：<a href="https://web.archive.org/web/20250724024336/https://www.techkoala.net/openwrt_resize/">OpenWRT overlay 空间扩容 - WebArchive</a></p>
 
 不管你的 SD 卡有多大，烧完 OpenWrt 后，rootfs 分区也只剩下几十 M 的空间，折腾的时候极有可能会遇到磁盘空间不足的情况。因此我们先对 OpenWrt 做一下扩容，先把它扩到 1G。
