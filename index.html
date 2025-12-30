@@ -232,7 +232,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-28 20:25:30" itemprop="dateModified" datetime="2025-12-28T20:25:30+00:00">2025-12-28</time>
+                <time title="修改时间：2025-12-30 22:09:47" itemprop="dateModified" datetime="2025-12-30T22:09:47+00:00">2025-12-30</time>
               </span>
 
           <br>
@@ -334,7 +334,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-28 20:25:30" itemprop="dateModified" datetime="2025-12-28T20:25:30+00:00">2025-12-28</time>
+                <time title="修改时间：2025-12-30 22:09:47" itemprop="dateModified" datetime="2025-12-30T22:09:47+00:00">2025-12-30</time>
               </span>
 
           <br>
@@ -343,7 +343,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>27k</span>
+              <span>26k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -362,8 +362,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>Kotlin 中的协程是无栈协程（话说 Kotlin 能实现有栈线程吗🤔），网上很多文章都说无栈协程一般都是通过状态机实现的，刚开始听到这个状态机的时候觉得有点玄乎，今天打算利用反编译工具并结合协程库源码，来探究一下 Kotlin 是如何通过状态机实现协程的。</p>
-<h1 id="从一个简单的示例开始"><a href="#从一个简单的示例开始" class="headerlink" title="从一个简单的示例开始"></a>从一个简单的示例开始</h1><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    runBlocking &#123;</span><br><span class="line">        <span class="keyword">val</span> result = fun1()</span><br><span class="line">        println(result)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">suspend</span> <span class="function"><span class="keyword">fun</span> <span class="title">fun1</span><span class="params">()</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> localInt = <span class="number">0</span></span><br><span class="line">    localInt += fun2()</span><br><span class="line">    localInt += fun3()</span><br><span class="line">    <span class="keyword">return</span> localInt</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">suspend</span> <span class="function"><span class="keyword">fun</span> <span class="title">fun2</span><span class="params">()</span></span>: <span class="built_in">Int</span> = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">suspend</span> <span class="function"><span class="keyword">fun</span> <span class="title">fun3</span><span class="params">()</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">    delay(<span class="number">1000</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>Kotlin 中的协程是无栈协程，网上很多文章都说无栈协程一般都是通过状态机实现的，于是我打算利用反编译工具并结合协程库源码，来探究一下 Kotlin 到底是如何通过状态机实现协程的。</p>
+<h1 id="一个简单的示例"><a href="#一个简单的示例" class="headerlink" title="一个简单的示例"></a>一个简单的示例</h1><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    runBlocking &#123;</span><br><span class="line">        <span class="keyword">val</span> result = fun1()</span><br><span class="line">        println(result)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">suspend</span> <span class="function"><span class="keyword">fun</span> <span class="title">fun1</span><span class="params">()</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> localInt = <span class="number">0</span></span><br><span class="line">    localInt += fun2()</span><br><span class="line">    localInt += fun3()</span><br><span class="line">    <span class="keyword">return</span> localInt</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">suspend</span> <span class="function"><span class="keyword">fun</span> <span class="title">fun2</span><span class="params">()</span></span>: <span class="built_in">Int</span> = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">suspend</span> <span class="function"><span class="keyword">fun</span> <span class="title">fun3</span><span class="params">()</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">    delay(<span class="number">1000</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2024/04/08/2024-04-08-kotlin-coroutine-state-machine/#more" rel="contents">
@@ -421,7 +421,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-28 20:25:30" itemprop="dateModified" datetime="2025-12-28T20:25:30+00:00">2025-12-28</time>
+                <time title="修改时间：2025-12-30 22:09:47" itemprop="dateModified" datetime="2025-12-30T22:09:47+00:00">2025-12-30</time>
               </span>
 
           <br>
@@ -513,7 +513,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-28 20:25:30" itemprop="dateModified" datetime="2025-12-28T20:25:30+00:00">2025-12-28</time>
+                <time title="修改时间：2025-12-30 22:09:47" itemprop="dateModified" datetime="2025-12-30T22:09:47+00:00">2025-12-30</time>
               </span>
 
           <br>
@@ -608,7 +608,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-28 20:25:30" itemprop="dateModified" datetime="2025-12-28T20:25:30+00:00">2025-12-28</time>
+                <time title="修改时间：2025-12-30 22:09:47" itemprop="dateModified" datetime="2025-12-30T22:09:47+00:00">2025-12-30</time>
               </span>
 
           <br>
@@ -695,7 +695,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-28 20:25:30" itemprop="dateModified" datetime="2025-12-28T20:25:30+00:00">2025-12-28</time>
+                <time title="修改时间：2025-12-30 22:09:47" itemprop="dateModified" datetime="2025-12-30T22:09:47+00:00">2025-12-30</time>
               </span>
 
           <br>
@@ -782,7 +782,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-28 20:25:30" itemprop="dateModified" datetime="2025-12-28T20:25:30+00:00">2025-12-28</time>
+                <time title="修改时间：2025-12-30 22:09:47" itemprop="dateModified" datetime="2025-12-30T22:09:47+00:00">2025-12-30</time>
               </span>
 
           <br>
@@ -871,7 +871,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-28 20:25:30" itemprop="dateModified" datetime="2025-12-28T20:25:30+00:00">2025-12-28</time>
+                <time title="修改时间：2025-12-30 22:09:47" itemprop="dateModified" datetime="2025-12-30T22:09:47+00:00">2025-12-30</time>
               </span>
 
           <br>
@@ -958,7 +958,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-28 20:25:30" itemprop="dateModified" datetime="2025-12-28T20:25:30+00:00">2025-12-28</time>
+                <time title="修改时间：2025-12-30 22:09:47" itemprop="dateModified" datetime="2025-12-30T22:09:47+00:00">2025-12-30</time>
               </span>
 
           <br>
@@ -1049,7 +1049,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-12-28 20:25:30" itemprop="dateModified" datetime="2025-12-28T20:25:30+00:00">2025-12-28</time>
+                <time title="修改时间：2025-12-30 22:09:47" itemprop="dateModified" datetime="2025-12-30T22:09:47+00:00">2025-12-30</time>
               </span>
 
           <br>
