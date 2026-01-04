@@ -232,7 +232,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2026-01-04 08:15:35" itemprop="dateModified" datetime="2026-01-04T08:15:35+00:00">2026-01-04</time>
+                <time title="修改时间：2026-01-04 08:20:49" itemprop="dateModified" datetime="2026-01-04T08:20:49+00:00">2026-01-04</time>
               </span>
 
           <br>
@@ -334,7 +334,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2026-01-04 08:15:35" itemprop="dateModified" datetime="2026-01-04T08:15:35+00:00">2026-01-04</time>
+                <time title="修改时间：2026-01-04 08:20:49" itemprop="dateModified" datetime="2026-01-04T08:20:49+00:00">2026-01-04</time>
               </span>
 
           <br>
@@ -421,7 +421,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2026-01-04 08:15:35" itemprop="dateModified" datetime="2026-01-04T08:15:35+00:00">2026-01-04</time>
+                <time title="修改时间：2026-01-04 08:20:49" itemprop="dateModified" datetime="2026-01-04T08:20:49+00:00">2026-01-04</time>
               </span>
 
           <br>
@@ -513,7 +513,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2026-01-04 08:15:35" itemprop="dateModified" datetime="2026-01-04T08:15:35+00:00">2026-01-04</time>
+                <time title="修改时间：2026-01-04 08:20:49" itemprop="dateModified" datetime="2026-01-04T08:20:49+00:00">2026-01-04</time>
               </span>
 
           <br>
@@ -608,7 +608,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2026-01-04 08:15:35" itemprop="dateModified" datetime="2026-01-04T08:15:35+00:00">2026-01-04</time>
+                <time title="修改时间：2026-01-04 08:20:49" itemprop="dateModified" datetime="2026-01-04T08:20:49+00:00">2026-01-04</time>
               </span>
 
           <br>
@@ -695,7 +695,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2026-01-04 08:15:35" itemprop="dateModified" datetime="2026-01-04T08:15:35+00:00">2026-01-04</time>
+                <time title="修改时间：2026-01-04 08:20:49" itemprop="dateModified" datetime="2026-01-04T08:20:49+00:00">2026-01-04</time>
               </span>
 
           <br>
@@ -782,7 +782,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2026-01-04 08:15:35" itemprop="dateModified" datetime="2026-01-04T08:15:35+00:00">2026-01-04</time>
+                <time title="修改时间：2026-01-04 08:20:49" itemprop="dateModified" datetime="2026-01-04T08:20:49+00:00">2026-01-04</time>
               </span>
 
           <br>
@@ -810,7 +810,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>gradle 的强大之处不在于它本身提供了多少功能，而是它的扩展性极强，开发者可以在构建脚本中定义任务，或者引入插件，将各式各样的任务集成到构建流程中。借助 gradle 灵活的 DSL ，开发者很容易完成构建脚本的编写。但也正是由于 DSL 太过于灵活，gradle 脚本的语法经常让我们琢磨不透，无法从传统编程语言的角度去理解它。这篇文章将会结合源码探究 gralde 的 dsl 实现原理，旨在帮助大家消除对于 Gradle 脚本语法的各种疑惑，更好地理解 Gradle。</p>
+          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>Gradle 的强大之处不在于它本身提供了多少功能，而是它的扩展性极强，开发者可以在构建脚本中定义任务，或者引入插件，将各式各样的任务集成到构建流程中。借助 Gradle 灵活的 DSL ，开发者很容易完成构建脚本的编写。但也正是由于 DSL 太过于灵活，gradle 脚本的语法经常让我们琢磨不透，无法从传统编程语言的角度去理解它。这篇文章将会结合源码探究 Gradle 的 dsl 实现原理，旨在帮助大家消除对于 Gradle 脚本语法的各种疑惑，更好地理解 Gradle。</p>
 <h1 id="走近-Groovy"><a href="#走近-Groovy" class="headerlink" title="走近 Groovy"></a>走近 Groovy</h1><p>我们知道，Gradle 是基于 Groovy 的，Groovy 是一门动态的 JVM 语言，Gradle 灵活的 DSL 就是建立在 Groovy 的动态性之上的。在探究 Gradle  之前，我们最好先对 Groovy 动态性的实现原理有一个初步的认知。</p>
 <p>从一个简单的例子开始：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> &#123;&#125;</span><br><span class="line"><span class="type">A</span> <span class="variable">a</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">A</span>()</span><br><span class="line">a.b = <span class="keyword">new</span> <span class="title class_">Object</span>()</span><br></pre></td></tr></table></figure>
@@ -874,7 +874,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2026-01-04 08:15:35" itemprop="dateModified" datetime="2026-01-04T08:15:35+00:00">2026-01-04</time>
+                <time title="修改时间：2026-01-04 08:20:49" itemprop="dateModified" datetime="2026-01-04T08:20:49+00:00">2026-01-04</time>
               </span>
 
           <br>
@@ -963,7 +963,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2026-01-04 08:15:35" itemprop="dateModified" datetime="2026-01-04T08:15:35+00:00">2026-01-04</time>
+                <time title="修改时间：2026-01-04 08:20:49" itemprop="dateModified" datetime="2026-01-04T08:20:49+00:00">2026-01-04</time>
               </span>
 
           <br>
@@ -1050,7 +1050,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2026-01-04 08:15:35" itemprop="dateModified" datetime="2026-01-04T08:15:35+00:00">2026-01-04</time>
+                <time title="修改时间：2026-01-04 08:20:49" itemprop="dateModified" datetime="2026-01-04T08:20:49+00:00">2026-01-04</time>
               </span>
 
           <br>
