@@ -13,7 +13,7 @@ tags:
 
 # 前言
 
-gradle 的强大之处不在于它本身提供了多少功能，而是它的扩展性极强，开发者可以在构建脚本中定义任务，或者引入插件，将各式各样的任务集成到构建流程中。借助 gradle 灵活的 DSL ，开发者很容易完成构建脚本的编写。但也正是由于 DSL 太过于灵活，gradle 脚本的语法经常让我们琢磨不透，无法从传统编程语言的角度去理解它。这篇文章将会结合源码探究 gralde 的 dsl 实现原理，旨在帮助大家消除对于 Gradle 脚本语法的各种疑惑，更好地理解 Gradle。
+Gradle 的强大之处不在于它本身提供了多少功能，而是它的扩展性极强，开发者可以在构建脚本中定义任务，或者引入插件，将各式各样的任务集成到构建流程中。借助 Gradle 灵活的 DSL ，开发者很容易完成构建脚本的编写。但也正是由于 DSL 太过于灵活，gradle 脚本的语法经常让我们琢磨不透，无法从传统编程语言的角度去理解它。这篇文章将会结合源码探究 Gradle 的 dsl 实现原理，旨在帮助大家消除对于 Gradle 脚本语法的各种疑惑，更好地理解 Gradle。
 
 # 走近 Groovy
 
@@ -394,7 +394,7 @@ private static final class ScriptDynamicObject extends AbstractDynamicObject {
 
 可见，`ScriptDynamicObject` 只是个包工头而已，它自己几乎没干啥，只是将所有的方法调用和属性访问都转包给 `binding`，`scriptObject`，`dynamicTarget` 这三个对象了。前两个对象是对 Groovy 脚本特性的继承，第三个对象则用来实现 Gradle DSL。
 
-`dynamicTarget` 由 `BasicScrip#init()` 注入进来，我们可以在 `init()` 里进行断点，然后以调试模式运行 gradle 脚本中任何一个任务，就能通过调用栈追溯到这个对象来自于 `DefaultProject#getAsDynamicObject()`。我们知道，一个 build.gradle 脚本对应着一个 Project，我们在脚本中的所有配置都是对这个 Project 进行的，`DefaultProject` 就代表着这个 Project。
+`dynamicTarget` 由 `BasicScrip#init()` 注入进来，我们可以在 `init()` 里进行断点，然后以调试模式运行 Gradle 脚本中任何一个任务，就能通过调用栈追溯到这个对象来自于 `DefaultProject#getAsDynamicObject()`。我们知道，一个 build.gradle 脚本对应着一个 Project，我们在脚本中的所有配置都是对这个 Project 进行的，`DefaultProject` 就代表着这个 Project。
 
 现在，我们可以把焦点放到 `DefaultProject` 上了。我们以 `getAsDynamicObject()` 为入口，对其一探究竟：
 
@@ -513,7 +513,7 @@ public interface ExtensionContainer {
 }
 ```
 
-很显然，`ExtraPropertiesExtension` 代表 gradle 中的 `ext` Extension，通常我们利用这个 Extension 设置一些属性。`ExtraPropertiesDynamicObjectAdapter` 对它进行了封装，然后将属性暴露给脚本，我们在脚本中对 `ext` 中属性的访问都将透过 `ExtraPropertiesDynamicObjectAdapter` 来进行，这就是我们为什么可以在脚本中直接使用 `ext` 块中定义的属性的原因。
+很显然，`ExtraPropertiesExtension` 代表 Gradle 中的 `ext` Extension，通常我们利用这个 Extension 设置一些属性。`ExtraPropertiesDynamicObjectAdapter` 对它进行了封装，然后将属性暴露给脚本，我们在脚本中对 `ext` 中属性的访问都将透过 `ExtraPropertiesDynamicObjectAdapter` 来进行，这就是我们为什么可以在脚本中直接使用 `ext` 块中定义的属性的原因。
 
 ## 对 Extension 配置块的支持
 
