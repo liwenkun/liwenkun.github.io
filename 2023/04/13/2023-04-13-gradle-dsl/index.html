@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="150x150" href="/images/favicon-150x150-next.png">
+  <link rel="icon" type="image/png" sizes="150x150" href="/images/favicon-150x150-next.png">
+  <link rel="icon" type="image/png" sizes="150x150" href="/images/favicon-150x150-next.png">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.loli.net/css?family=Monda:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|EB Garamond:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"liwenkun.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":{"disqus":{"order":-2}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":true,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="前言gradle 的强大之处不在于它本身提供了多少功能，而是它的扩展性极强，开发者可以在构建脚本中定义任务，或者引入插件，将各式各样的任务集成到构建流程中。借助 gradle 灵活的 DSL ，开发者很容易完成构建脚本的编写。但也正是由于 DSL 太过于灵活，gradle 脚本的语法经常让我们琢磨不透，无法从传统编程语言的角度去理解它。这篇文章将会结合源码探究 gralde 的 dsl 实现原理，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Gradle DSL 原理">
+<meta property="og:url" content="https://liwenkun.github.io/2023/04/13/2023-04-13-gradle-dsl/index.html">
+<meta property="og:site_name" content="Chance 的博客">
+<meta property="og:description" content="前言gradle 的强大之处不在于它本身提供了多少功能，而是它的扩展性极强，开发者可以在构建脚本中定义任务，或者引入插件，将各式各样的任务集成到构建流程中。借助 gradle 灵活的 DSL ，开发者很容易完成构建脚本的编写。但也正是由于 DSL 太过于灵活，gradle 脚本的语法经常让我们琢磨不透，无法从传统编程语言的角度去理解它。这篇文章将会结合源码探究 gralde 的 dsl 实现原理，">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-04-13T21:14:51.000Z">
+<meta property="article:modified_time" content="2026-01-04T08:15:35.332Z">
+<meta property="article:author" content="Chance">
+<meta property="article:tag" content="Gradle">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://liwenkun.github.io/2023/04/13/2023-04-13-gradle-dsl/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Gradle DSL 原理 | Chance 的博客</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-76493784-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-76493784-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4cc1f2d8f3067386cc5cdb626a202900";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Chance 的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾生也有涯</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">28</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">29</span></a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://liwenkun.github.io/2023/04/13/2023-04-13-gradle-dsl/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://www.gravatar.com/avatar/95a0f14d3e6b40995a92c41673fd09d4?s=640">
+      <meta itemprop="name" content="Chance">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Chance 的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Gradle DSL 原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-04-13 21:14:51" itemprop="dateCreated datePublished" datetime="2023-04-13T21:14:51+00:00">2023-04-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-01-04 08:15:35" itemprop="dateModified" datetime="2026-01-04T08:15:35+00:00">2026-01-04</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>17k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>15 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>gradle 的强大之处不在于它本身提供了多少功能，而是它的扩展性极强，开发者可以在构建脚本中定义任务，或者引入插件，将各式各样的任务集成到构建流程中。借助 gradle 灵活的 DSL ，开发者很容易完成构建脚本的编写。但也正是由于 DSL 太过于灵活，gradle 脚本的语法经常让我们琢磨不透，无法从传统编程语言的角度去理解它。这篇文章将会结合源码探究 gralde 的 dsl 实现原理，旨在帮助大家消除对于 Gradle 脚本语法的各种疑惑，更好地理解 Gradle。</p>
+<h1 id="走近-Groovy"><a href="#走近-Groovy" class="headerlink" title="走近 Groovy"></a>走近 Groovy</h1><p>我们知道，Gradle 是基于 Groovy 的，Groovy 是一门动态的 JVM 语言，Gradle 灵活的 DSL 就是建立在 Groovy 的动态性之上的。在探究 Gradle  之前，我们最好先对 Groovy 动态性的实现原理有一个初步的认知。</p>
+<p>从一个简单的例子开始：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> &#123;&#125;</span><br><span class="line"><span class="type">A</span> <span class="variable">a</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">A</span>()</span><br><span class="line">a.b = <span class="keyword">new</span> <span class="title class_">Object</span>()</span><br></pre></td></tr></table></figure>
+
+<p>如果这是一段 Java 代码，肯定会报错，因为找不到属性 <code>b</code>。但是在 Groovy 中就不一样了，上面这段代码在大概会编译成这个样子（实际上比这复杂，这是简化后的代码）：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// groovy 脚本中定义的所有类都会自动实现 GroovyObject </span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> <span class="keyword">implements</span> <span class="title class_">GroovyObject</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line">A a = <span class="keyword">new</span> A()</span><br><span class="line">a.setProperty(<span class="string">&quot;b&quot;</span>, <span class="keyword">new</span> Object())</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<p>上面这段代码在 Groovy 中可以编译通过，但运行的话依然会报错。因为 <code>setProperty()</code> 默认会通过反射尝试访问 <code>A</code> 的 <code>b</code> 属性，但 <code>A</code> 并没有该属性。现在我们对 <code>A</code> 进行一些改造：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> <span class="keyword">implements</span> <span class="title class_">GroovyObject</span> &#123;</span><br><span class="line"></span><br><span class="line">    Map&lt;String, Object&gt; dynamicProperties = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;()</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setProperty</span><span class="params">(String propertyName, Object newValue)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="built_in">super</span>.setProperty(propertyName, newValue)</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ignored) &#123;</span><br><span class="line">            dynamicProperties.put(propertyName, newValue)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    Object <span class="title function_">getProperty</span><span class="params">(String propertyName)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">super</span>.getProperty(propertyName)</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ignored) &#123;</span><br><span class="line">            <span class="keyword">return</span> dynamicProperties.get(propertyName)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们重写了 <code>setProperty</code> 和<code>getProperty</code> 方法，引入了 <code>dynamicProperties</code> 这个属性容器，这就是让 Groovy 具备动态性的魔法。经过改造后，对于 <code>b</code> 的访问不再通过反射来进行，而是转成了对属性容器的存取。利用这个语言特性，我们就可以实现偷梁换柱了。</p>
+<h1 id="Groovy-对于脚本的支持"><a href="#Groovy-对于脚本的支持" class="headerlink" title="Groovy 对于脚本的支持"></a>Groovy 对于脚本的支持</h1><p>Groovy 不仅是一门动态语言，还是一门脚本语言。脚本语言的一个特点是，可以直接把逻辑写在最外层。比如：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print(<span class="string">&quot;hello world&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>Groovy 终究是要被变成 Class 文件在 JVM 上执行的，JVM 可做不到直接直接执行一个在顶层作用域中的方法，所有方法无论是实例方法还是静态方法，都必须属于一个类。不难猜到，groovyc 肯定会将上述代码封装成一个类，这个类就是 <code>Script </code>类。groovyc 会将所有的脚本编译成 <code>Script</code> 的子类。<code>Script</code> 有一个待实现方法 <code>run()</code>，脚本中的代码会被放入到 <code>Script</code> 子类的 <code>run()</code> 中。执行这个子类对象的 <code>run()</code> 方法，也就等于执行了脚本中的逻辑。</p>
+<p>前面我们说过，Groovy 世界里的对象，都实现了 <code>GroovyObject</code> 类，<code>Script</code> 也不例外。但 <code>Script</code> 不是直接继承自 <code>GroovyObject</code>，而是 <code>GroovyObjectSupport</code>，这个类定义如下：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">GroovyObjectSupport</span> <span class="keyword">implements</span> <span class="title class_">GroovyObject</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> MetaClass metaClass = <span class="variable language_">this</span>.getDefaultMetaClass();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transient</span></span><br><span class="line">    <span class="keyword">public</span> MetaClass getMetaClass() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.metaClass;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">void</span> setMetaClass(MetaClass metaClass) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.metaClass = (MetaClass)Optional.ofNullable(metaClass).orElseGet(<span class="attr">this:</span>:getDefaultMetaClass);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> MetaClass getDefaultMetaClass() &#123;</span><br><span class="line">        <span class="keyword">return</span> InvokerHelper.getMetaClass(<span class="variable language_">this</span>.getClass());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>揭晓一下 <code>GroovyObject</code> 的真面目：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">GroovyObject</span> &#123;</span><br><span class="line">    <span class="keyword">default</span> Object invokeMethod(String name, Object args) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.getMetaClass().invokeMethod(<span class="variable language_">this</span>, name, args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">default</span> Object getProperty(String propertyName) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.getMetaClass().getProperty(<span class="variable language_">this</span>, propertyName);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">default</span> <span class="type">void</span> setProperty(String propertyName, Object newValue) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.getMetaClass().setProperty(<span class="variable language_">this</span>, propertyName, newValue);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MetaClass getMetaClass();</span><br><span class="line"></span><br><span class="line">    <span class="type">void</span> setMetaClass(MetaClass var1);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>MetaClass</code> 代表当前类元数据，它知道当前类有哪些属性，有哪些方法，它的 <code>getProperty()</code> 和 <code>invokeMethod()</code> 会以反射的方式访问当前类的属性和方法。groovy 脚本可以直接使用 <code>print*()</code> 和 <code>evaluate()</code> 方法，其原因就是 <code>Script</code> 中定义这些方法，借助 <code>MetaClass </code>就可以访问它们。</p>
+<p class="notice-info">这也是为什么在接下来的 script.groovy 中，可以调用 MyScriptBaseClass 提供的 customPrintln 类的原因。</p>
+
+<p>Groovy 脚本的强大之处在于，开发者可以对脚本环境进行定制。</p>
+<p>compile.groovy：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> groovy.lang.GroovyClassLoader</span><br><span class="line"><span class="keyword">import</span> org.codehaus.groovy.control.CompilerConfiguration</span><br><span class="line"><span class="keyword">import</span> groovy.lang.Script</span><br><span class="line"></span><br><span class="line"><span class="comment">// 自定义脚本基类，让编译器为 script.groovy 生成的基类为这个类，而不是 Script</span></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">MyScriptBaseClass</span> <span class="keyword">extends</span> <span class="title class_">Script</span> &#123;</span><br><span class="line">  <span class="comment">// 为脚本提供提供全局方法</span></span><br><span class="line">  <span class="keyword">def</span> customPrintln(String msg) &#123;</span><br><span class="line">    System.out.println(msg)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 为脚本绑定全局属性</span></span><br><span class="line"><span class="keyword">def</span> binding = <span class="keyword">new</span> Binding()</span><br><span class="line">binding.setProperty(<span class="string">&quot;global&quot;</span>, <span class="keyword">new</span> Object() &#123;</span><br><span class="line">    <span class="keyword">def</span> customPrintln(String msg) &#123;</span><br><span class="line">        System.out.println(msg)</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> compilerConfiguration = <span class="keyword">new</span> CompilerConfiguration()</span><br><span class="line"><span class="comment">// 执行字节码输出目录</span></span><br><span class="line">compilerConfiguration.targetDirectory = <span class="keyword">new</span> File(<span class="string">&quot;./&quot;</span>)</span><br><span class="line"><span class="comment">// 自定义脚本基类</span></span><br><span class="line">compilerConfiguration.scriptBaseClass = MyScriptBaseClass.<span class="keyword">class</span>.name</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> classLoader = <span class="keyword">new</span> GroovyClassLoader(<span class="variable language_">this</span>.<span class="keyword">class</span>.classLoader, compilerConfiguration)</span><br><span class="line"><span class="keyword">def</span> scriptClass = classLoader.parseClass(<span class="keyword">new</span> File(<span class="string">&quot;./script.groovy&quot;</span>))</span><br><span class="line"><span class="keyword">def</span> script = scriptClass.newInstance()</span><br><span class="line"><span class="comment">// 绑定全局变量</span></span><br><span class="line">script.setBinding(binding)</span><br><span class="line"><span class="comment">// 运行脚本</span></span><br><span class="line">script.run()</span><br></pre></td></tr></table></figure>
+
+<p>script.groovy：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">println <span class="string">&quot;hello world&quot;</span></span><br><span class="line">global.customPrintln <span class="string">&quot;hello world from customPrint provided by binding&quot;</span></span><br><span class="line">customPrintln <span class="string">&quot;hello world from customPrintln provided by script base class&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>运行 compile.groovy :</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">➜ groovy compile.groovy</span><br><span class="line">hello world</span><br><span class="line">hello world from customPrint provided by binding</span><br><span class="line">hello world from customPrintln provided by script base class</span><br></pre></td></tr></table></figure>
+
+<p>以上代码为脚本扩充了一个全局对象和一个全局方法，实现起来非常简单。</p>
+<h1 id="Gradle-的魔法"><a href="#Gradle-的魔法" class="headerlink" title="Gradle 的魔法"></a>Gradle 的魔法</h1><p>Gradle DSL 其实就是利用的 Groovy 的对脚本地定制化开发来实现的。编译 settings.gradle 脚本的时候，Gradle 会让把编译为 <code>SettingsScript</code> 的子类，编译 build.gradle 的时候，Gradle 会把脚本编译为 <em><code>ProjectScript</code></em> 的子类。这两个类的继承关系为：</p>
+<ul>
+<li><p><code>BuildScript</code> 的继承链是： <code>SettingsScript</code> -&gt;<code>PluginsAwareScript</code> -&gt; <code>DefaultScript</code> -&gt;<code> BaiscScript</code> -&gt; <code>Script</code></p>
+</li>
+<li><p><code>ProjectScript</code> 的继承链为：<code>ProjectScript</code> -&gt;<code>PluginsAwareScript</code>-&gt; <code>DefaultScript</code> -&gt; <code>BaiscScript</code> -&gt; <code>Script</code></p>
+</li>
+</ul>
+<p>继承链的每一个基类，都承担着相应的职责。</p>
+<h2 id="DefaultScript"><a href="#DefaultScript" class="headerlink" title="DefaultScript"></a>DefaultScript</h2><p><code>DefaultScript</code> 类定义主要定义了一些工具方法，方便我们编写脚本：</p>
+<table>
+<thead>
+<tr>
+<th>DefaultScript 类方法清单</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>apply(Map options)</code></td>
+</tr>
+<tr>
+<td><code>buildscript(Closure configureClosure)</code></td>
+</tr>
+<tr>
+<td><code>file(Object path)</code></td>
+</tr>
+<tr>
+<td><code>uri(Object path)</code></td>
+</tr>
+<tr>
+<td><code>files(Object paths, Closure configureClosure)</code></td>
+</tr>
+<tr>
+<td><code>fileTree(Object baseDir, Closure configureClosure)</code></td>
+</tr>
+<tr>
+<td><code>zipTree(Object zipPath)</code></td>
+</tr>
+<tr>
+<td><code>tarTree(Object tarPath)</code></td>
+</tr>
+<tr>
+<td><code>copy(Action&lt;? super CopySpec&gt; action)</code></td>
+</tr>
+<tr>
+<td><code>mkdir(Object path)</code></td>
+</tr>
+<tr>
+<td><code>delete(Action&lt;? super DeleteSpec&gt; action)</code></td>
+</tr>
+<tr>
+<td><code>javaexec(Action&lt;? super JavaExecSpec&gt; action)</code></td>
+</tr>
+<tr>
+<td><code>exec(Closure closure)</code></td>
+</tr>
+</tbody></table>
+<h2 id="PluginsAwareSript"><a href="#PluginsAwareSript" class="headerlink" title="PluginsAwareSript"></a>PluginsAwareSript</h2><p><code>PluginsAwareScript</code> 中定义了<code> plugins()</code> ，这就是我们可以在脚本中 <code>pluings &#123;&#125;</code> 块应用插件的原因。</p>
+<h2 id="ProjectScript"><a href="#ProjectScript" class="headerlink" title="ProjectScript"></a>ProjectScript</h2><p><code>ProjectScript</code> 的定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">ProjectScript</span> <span class="keyword">extends</span> <span class="title class_">PluginsAwareScript</span> &#123;</span><br><span class="line"></span><br><span class="line">    ......</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">apply</span><span class="params">(Closure closure)</span> &#123;</span><br><span class="line">        getScriptTarget().apply(closure);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">apply</span><span class="params">(Map options)</span> &#123;</span><br><span class="line">        getScriptTarget().apply(options);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">buildscript</span><span class="params">(Closure configureClosure)</span> &#123;</span><br><span class="line">        getScriptTarget().buildscript(configureClosure);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> LoggingManager <span class="title function_">getLogging</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> getScriptTarget().getLogging();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Logger <span class="title function_">getLogger</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> getScriptTarget().getLogger();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ProjectInternal <span class="title function_">getScriptTarget</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> (ProjectInternal) <span class="built_in">super</span>.getScriptTarget();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个类重写了 <code>PluginsAwareScript</code> 和 <code>DefaultScript</code> 中的一些方法，同时我们会发现，他的很多方法都转调到了 <code>getScriptTarget()</code> 返回的对象上，这个对象是什么？答案在 <code>BasicScript</code> 中。</p>
+<h2 id="BasicScript"><a href="#BasicScript" class="headerlink" title="BasicScript"></a>BasicScript</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">BasicScript</span> <span class="keyword">extends</span> <span class="title class_">org</span>.gradle.groovy.scripts.Script <span class="keyword">implements</span> <span class="title class_">org</span>.gradle.api.Script, DynamicObjectAware, GradleScript &#123;</span><br><span class="line">    ......</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Object target;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">ScriptDynamicObject</span> <span class="variable">dynamicObject</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ScriptDynamicObject</span>(<span class="built_in">this</span>);</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">(Object target, ServiceRegistry services)</span> &#123;</span><br><span class="line">        ......</span><br><span class="line">        setScriptTarget(target);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">getScriptTarget</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">setScriptTarget</span><span class="params">(Object target)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.target = target;</span><br><span class="line">        <span class="built_in">this</span>.dynamicObject.setTarget(target);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> PrintStream <span class="title function_">getOut</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> System.out;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">getProperty</span><span class="params">(String property)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dynamicObject.getProperty(property);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setProperty</span><span class="params">(String property, Object newValue)</span> &#123;</span><br><span class="line">        dynamicObject.setProperty(property, newValue);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Map&lt;String, ?&gt; getProperties() &#123;</span><br><span class="line">        <span class="keyword">return</span> dynamicObject.getProperties();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasProperty</span><span class="params">(String property)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dynamicObject.hasProperty(property);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">invokeMethod</span><span class="params">(String name, Object args)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dynamicObject.invokeMethod(name, (Object[]) args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> DynamicObject <span class="title function_">getAsDynamicObject</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dynamicObject;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>BasicScript</code> 中的所有的方法调用都将会委托给 <code>dynamicObject</code>，它是一个 <code>ScriptDynamicObject</code> 对象，<code>ScriptDynamicObject</code>  继承自 <code>DynamicObject</code>。这个类顾名思义，代表着一个动态对象。什么是动态对象？从功能方面讲，就是可以在运行时对方法调用和属性访问进行转发的对象。其定义如下：</p>
+<h2 id="ScriptDynamicObject"><a href="#ScriptDynamicObject" class="headerlink" title="ScriptDynamicObject"></a>ScriptDynamicObject</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">ScriptDynamicObject</span> <span class="keyword">extends</span> <span class="title class_">AbstractDynamicObject</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> Binding binding;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> DynamicObject scriptObject;</span><br><span class="line">        <span class="keyword">private</span> DynamicObject dynamicTarget;</span><br><span class="line"></span><br><span class="line">        ScriptDynamicObject(BasicScript script) &#123;</span><br><span class="line">            <span class="built_in">this</span>.binding = script.getBinding();</span><br><span class="line">            scriptObject = <span class="keyword">new</span> <span class="title class_">BeanDynamicObject</span>(script).withNotImplementsMissing();</span><br><span class="line">            dynamicTarget = scriptObject;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setTarget</span><span class="params">(Object target)</span> &#123;</span><br><span class="line">            dynamicTarget = DynamicObjectUtil.asDynamicObject(target);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> Map&lt;String, ?&gt; getProperties() &#123;</span><br><span class="line">            <span class="keyword">return</span> dynamicTarget.getProperties();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasMethod</span><span class="params">(String name, Object... arguments)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> scriptObject.hasMethod(name, arguments) || dynamicTarget.hasMethod(name, arguments);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasProperty</span><span class="params">(String name)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> binding.hasVariable(name) || scriptObject.hasProperty(name) || dynamicTarget.hasProperty(name);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> DynamicInvokeResult <span class="title function_">tryInvokeMethod</span><span class="params">(String name, Object... arguments)</span> &#123;</span><br><span class="line">            <span class="type">DynamicInvokeResult</span> <span class="variable">result</span> <span class="operator">=</span> scriptObject.tryInvokeMethod(name, arguments);</span><br><span class="line">            <span class="keyword">if</span> (result.isFound()) &#123;</span><br><span class="line">                <span class="keyword">return</span> result;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> dynamicTarget.tryInvokeMethod(name, arguments);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> DynamicInvokeResult <span class="title function_">tryGetProperty</span><span class="params">(String property)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (binding.hasVariable(property)) &#123;</span><br><span class="line">                <span class="keyword">return</span> DynamicInvokeResult.found(binding.getVariable(property));</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">DynamicInvokeResult</span> <span class="variable">result</span> <span class="operator">=</span> scriptObject.tryGetProperty(property);</span><br><span class="line">            <span class="keyword">if</span> (result.isFound()) &#123;</span><br><span class="line">                <span class="keyword">return</span> result;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> dynamicTarget.tryGetProperty(property);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> DynamicInvokeResult <span class="title function_">trySetProperty</span><span class="params">(String property, Object newValue)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> dynamicTarget.trySetProperty(property, newValue);</span><br><span class="line">        &#125;</span><br><span class="line">        ......</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>ScriptDynamicObject</code> 封装了三个重要的对象：<code>binding</code>，<code>scriptObject</code>，<code>dynamicTarget</code>。</p>
+<ul>
+<li><p><code>binding</code> 前面已经讲过，这里不再赘述。</p>
+</li>
+<li><p><code>scriptObject</code> 是另一个 <code>DynamicObject</code>，这个类由 <code>DefaultScript</code> 包装而来，叫做 <code>BeanDynamicObject</code>，对这个对象的方法和属性的访问最终都会通过 <code>DefaultScript</code> 的 <code>MetaClass</code> 来完成。所以不难猜到，其实 <code>BeanDynamicObject</code> 这个对象负责将属性访问和方法通过反射的方式转发给其宿主，也就是 <code>DefaultScript</code> 类及其子类对象，如 <code>ProjectScript</code>。</p>
+</li>
+<li><p><code>dynamicTarget</code> 默认情况下就是 <code>scriptObject</code>，可通过 <code>setTarget()</code> 覆盖，这个对象同样是个 <code>DynamicObject</code>。</p>
+</li>
+</ul>
+<p>可见，<code>ScriptDynamicObject</code> 只是个包工头而已，它自己几乎没干啥，只是将所有的方法调用和属性访问都转包给 <code>binding</code>，<code>scriptObject</code>，<code>dynamicTarget</code> 这三个对象了。前两个对象是对 Groovy 脚本特性的继承，第三个对象则用来实现 Gradle DSL。</p>
+<p><code>dynamicTarget</code> 由 <code>BasicScrip#init()</code> 注入进来，我们可以在 <code>init()</code> 里进行断点，然后以调试模式运行 gradle 脚本中任何一个任务，就能通过调用栈追溯到这个对象来自于 <code>DefaultProject#getAsDynamicObject()</code>。我们知道，一个 build.gradle 脚本对应着一个 Project，我们在脚本中的所有配置都是对这个 Project 进行的，<code>DefaultProject</code> 就代表着这个 Project。</p>
+<p>现在，我们可以把焦点放到 <code>DefaultProject</code> 上了。我们以 <code>getAsDynamicObject()</code> 为入口，对其一探究竟：</p>
+<h2 id="DefaultProject"><a href="#DefaultProject" class="headerlink" title="DefaultProject"></a>DefaultProject</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">DefaultProject</span> <span class="keyword">extends</span> <span class="title class_">AbstractPluginAware</span> <span class="keyword">implements</span> <span class="title class_">ProjectInternal</span>, DynamicObjectAware &#123;</span><br><span class="line">    ......</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ExtensibleDynamicObject extensibleDynamicObject;</span><br><span class="line">    ......</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">DefaultProject</span><span class="params">(...)</span> &#123;</span><br><span class="line">        ......</span><br><span class="line"></span><br><span class="line">        services = serviceRegistryFactory.createFor(<span class="built_in">this</span>);</span><br><span class="line">        taskContainer = services.get(TaskContainerInternal.class);</span><br><span class="line"></span><br><span class="line">        extensibleDynamicObject = <span class="keyword">new</span> <span class="title class_">ExtensibleDynamicObject</span>(<span class="built_in">this</span>, Project.class, services.get(InstantiatorFactory.class).decorateLenient(services));</span><br><span class="line">        <span class="keyword">if</span> (parent != <span class="literal">null</span>) &#123;</span><br><span class="line">            extensibleDynamicObject.setParent(parent.getInheritedScope());</span><br><span class="line">        &#125;</span><br><span class="line">        extensibleDynamicObject.addObject(taskContainer.getTasksAsDynamicObject(), ExtensibleDynamicObject.Location.AfterConvention);</span><br><span class="line">        ......</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> DynamicObject <span class="title function_">getAsDynamicObject</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> extensibleDynamicObject;</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>略去无关代码后，我们一眼就能看出 <code>ExtensibleDynamicObject</code> 是主角。我们看看 <code>ExtensibleDynamicObject</code> 中的逻辑：</p>
+<h2 id="ExtensibleDynamicObject"><a href="#ExtensibleDynamicObject" class="headerlink" title="ExtensibleDynamicObject"></a>ExtensibleDynamicObject</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ExtensibleDynamicObject</span> <span class="keyword">extends</span> <span class="title class_">MixInClosurePropertiesAsMethodsDynamicObject</span> <span class="keyword">implements</span> <span class="title class_">org</span>.gradle.api.internal.HasConvention &#123;</span><br><span class="line">    ......</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ExtensibleDynamicObject</span><span class="params">(Object delegate, Class&lt;?&gt; publicType, InstanceGenerator instanceGenerator)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>(delegate, createDynamicObject(delegate, publicType), <span class="keyword">new</span> <span class="title class_">DefaultConvention</span>(instanceGenerator));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ExtensibleDynamicObject</span><span class="params">(Object delegate, AbstractDynamicObject dynamicDelegate, InstanceGenerator instanceGenerator)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>(delegate, dynamicDelegate, <span class="keyword">new</span> <span class="title class_">DefaultConvention</span>(instanceGenerator));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ExtensibleDynamicObject</span><span class="params">(Object delegate, AbstractDynamicObject dynamicDelegate, Convention convention)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.dynamicDelegate = dynamicDelegate;</span><br><span class="line">        <span class="built_in">this</span>.convention = convention;</span><br><span class="line">        <span class="built_in">this</span>.extraPropertiesDynamicObject = <span class="keyword">new</span> <span class="title class_">ExtraPropertiesDynamicObjectAdapter</span>(delegate.getClass(), convention.getExtraProperties());</span><br><span class="line"></span><br><span class="line">        updateDelegates();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">updateDelegates</span><span class="params">()</span> &#123;</span><br><span class="line">        DynamicObject[] delegates = <span class="keyword">new</span> <span class="title class_">DynamicObject</span>[<span class="number">6</span>];</span><br><span class="line">        delegates[<span class="number">0</span>] = dynamicDelegate;</span><br><span class="line">        delegates[<span class="number">1</span>] = extraPropertiesDynamicObject;</span><br><span class="line">        <span class="type">int</span> <span class="variable">idx</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (beforeConvention != <span class="literal">null</span>) &#123;</span><br><span class="line">            delegates[idx++] = beforeConvention;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (convention != <span class="literal">null</span>) &#123;</span><br><span class="line">            delegates[idx++] = convention.getExtensionsAsDynamicObject();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (afterConvention != <span class="literal">null</span>) &#123;</span><br><span class="line">            delegates[idx++] = afterConvention;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">boolean</span> <span class="variable">addedParent</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (parent != <span class="literal">null</span>) &#123;</span><br><span class="line">            addedParent = <span class="literal">true</span>;</span><br><span class="line">            delegates[idx++] = parent;</span><br><span class="line">        &#125;</span><br><span class="line">        DynamicObject[] objects = <span class="keyword">new</span> <span class="title class_">DynamicObject</span>[idx];</span><br><span class="line">        System.arraycopy(delegates, <span class="number">0</span>, objects, <span class="number">0</span>, idx);</span><br><span class="line">        setObjects(objects);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (addedParent) &#123;</span><br><span class="line">            idx--;</span><br><span class="line">            objects = <span class="keyword">new</span> <span class="title class_">DynamicObject</span>[idx];</span><br><span class="line">            System.arraycopy(delegates, <span class="number">0</span>, objects, <span class="number">0</span>, idx);</span><br><span class="line">            setObjectsForUpdate(objects);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addObject</span><span class="params">(DynamicObject object, Location location)</span> &#123;</span><br><span class="line">        <span class="keyword">switch</span> (location) &#123;</span><br><span class="line">            <span class="keyword">case</span> BeforeConvention:</span><br><span class="line">                beforeConvention = object;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> AfterConvention:</span><br><span class="line">                afterConvention = object;</span><br><span class="line">        &#125;</span><br><span class="line">        updateDelegates();</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br></pre></td></tr></table></figure>
+
+<p><code>ExtensibleDynamicObject</code> 也是个不干活的，它是一个 <code>DynamicObject</code> 容器，它把 <code>DefaultProject</code> 封装成 <code>BeanDyanmicObject</code>，把 <code>convention.getExtraProperties()</code> 封装成 <code>ExtraPropertiesDynamicObjectAdapter</code>，还通过 <code>convention.getExtensionsAsDynamicObject()</code> 获取了 <code>ExtensionsDynamicObject</code>。在 <code>DefaultProject</code> 的构造函数中我们看到，它还通过 <code>addObject()</code> 获取了 <code>taskContainer.getTasksAsDynamicObject()</code>。脚本中所有对 <code>ExtensibleDynamicObject</code> 的方法调用和属性访问，都会转包给这些对象。</p>
+<h2 id="对-Ext-配置块的支持"><a href="#对-Ext-配置块的支持" class="headerlink" title="对 Ext 配置块的支持"></a>对 Ext 配置块的支持</h2><p>现在我们看看 <code>getExtraProperties()</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ExtensionContainer</span> &#123;</span><br><span class="line">    ......</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The extra properties extension in this extension container.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * This extension is always present in the container, with the name “ext”.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> The extra properties extension in this extension container.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ExtraPropertiesExtension <span class="title function_">getExtraProperties</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很显然，<code>ExtraPropertiesExtension</code> 代表 gradle 中的 <code>ext</code> Extension，通常我们利用这个 Extension 设置一些属性。<code>ExtraPropertiesDynamicObjectAdapter</code> 对它进行了封装，然后将属性暴露给脚本，我们在脚本中对 <code>ext</code> 中属性的访问都将透过 <code>ExtraPropertiesDynamicObjectAdapter</code> 来进行，这就是我们为什么可以在脚本中直接使用 <code>ext</code> 块中定义的属性的原因。</p>
+<h2 id="对-Extension-配置块的支持"><a href="#对-Extension-配置块的支持" class="headerlink" title="对 Extension 配置块的支持"></a>对 Extension 配置块的支持</h2><p>我们现在看看 <code>convention.getExtensionsAsDynamicObject()</code> 返回的 <code>ExtensionsDynamicObject</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">ExtensionsDynamicObject</span> <span class="keyword">extends</span> <span class="title class_">AbstractDynamicObject</span> &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">getDisplayName</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;extensions&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasProperty</span><span class="params">(String name)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (extensionsStorage.hasExtension(name)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            ......</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> Map&lt;String, Object&gt; <span class="title function_">getProperties</span><span class="params">()</span> &#123;</span><br><span class="line">            Map&lt;String, Object&gt; properties = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;String, Object&gt;();</span><br><span class="line">            ......</span><br><span class="line">            properties.putAll(extensionsStorage.getAsMap());</span><br><span class="line">            <span class="keyword">return</span> properties;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> DynamicInvokeResult <span class="title function_">tryGetProperty</span><span class="params">(String name)</span> &#123;</span><br><span class="line">            <span class="type">Object</span> <span class="variable">extension</span> <span class="operator">=</span> extensionsStorage.findByName(name);</span><br><span class="line">            <span class="keyword">if</span> (extension != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> DynamicInvokeResult.found(extension);</span><br><span class="line">            &#125;</span><br><span class="line">            ......</span><br><span class="line">            <span class="keyword">return</span> DynamicInvokeResult.notFound();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> Object <span class="title function_">propertyMissing</span><span class="params">(String name)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> getProperty(name);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> DynamicInvokeResult <span class="title function_">trySetProperty</span><span class="params">(String name, Object value)</span> &#123;</span><br><span class="line">            checkExtensionIsNotReassigned(name);</span><br><span class="line">            <span class="keyword">if</span> (plugins == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> DynamicInvokeResult.notFound();</span><br><span class="line">            &#125;</span><br><span class="line">            ......</span><br><span class="line">            <span class="keyword">return</span> DynamicInvokeResult.notFound();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">propertyMissing</span><span class="params">(String name, Object value)</span> &#123;</span><br><span class="line">            setProperty(name, value);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> DynamicInvokeResult <span class="title function_">tryInvokeMethod</span><span class="params">(String name, Object... args)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (isConfigureExtensionMethod(name, args)) &#123;</span><br><span class="line">                <span class="keyword">return</span> DynamicInvokeResult.found(configureExtension(name, args));</span><br><span class="line">            &#125;</span><br><span class="line">            ......</span><br><span class="line">            <span class="keyword">return</span> DynamicInvokeResult.notFound();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> Object <span class="title function_">methodMissing</span><span class="params">(String name, Object args)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> invokeMethod(name, (Object[]) args);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasMethod</span><span class="params">(String name, Object... args)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (isConfigureExtensionMethod(name, args)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            ......</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        ......</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> Object <span class="title function_">configureExtension</span><span class="params">(String name, Object[] args)</span> &#123;</span><br><span class="line">            <span class="type">Closure</span> <span class="variable">closure</span> <span class="operator">=</span> (Closure) args[<span class="number">0</span>];</span><br><span class="line">            Action&lt;Object&gt; action = ConfigureUtil.configureUsing(closure);</span><br><span class="line">            <span class="keyword">return</span> extensionsStorage.configureExtension(name, action);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到：</p>
+<ul>
+<li><p>当访问属性时，这个对象会寻找对应的 Extension，然后将 Extension 返回，所以我们可以在脚本中直接通过 Extension 名获取 Extension，比如 <code>java.sourceCompatibility</code></p>
+</li>
+<li><p>当调用方法时，会使用 <code>configureExtension</code> 对 Extension 进行配置，这里会假设 <code>args</code> 只包含一个 Closure 类型的参数，<code>ExtensionsStorage#configureExtension()</code> 方法的逻辑是：先根据 <code>name</code> 找到对应的Extension，然后对 Extension 用前面的 Closure 类型的参数进行配置，这就是为什么我们可以使用 <code>java &#123;&#125;</code> 这种方式配置 java Extension 的原因。</p>
+</li>
+</ul>
+<p>当我们使用 <code>java &#123;&#125;</code> 语法配置 Java Extension 时，此语法结构会被 Groovy 编译成对 <code>DefaultScript</code>  对象 <code>invokeMethod()</code> 方法的调用。调用参数为 <code>name: &quot;java&quot;, args: closure</code>。前面分析过，<code>DefaultScript</code> 最终会把调用转发给 <code>ScriptDynamicObject</code>，而 <code>ScriptDynamicObject</code> 又会把调用转发给 <code>ExtensibleDynamicObject</code>，<code>ExtensibleDynamicObject</code> 是一个 <code>DynamicObject</code> 容器，它会继续把调用转发给容器中的 <code>DynamicObject</code>，当调用转发到 <code>ExtensionsDynamicObject</code> 时，会根据 <code>name</code> 获取到 java Extension，然后对 java Extension 进行配置。Gradle 会把 Extension 对象作为 closure 的 delegate，这样一来，closure 内就可以访问到 Extension 中的属性和方法了。</p>
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>其他的 DSL 语法原理也差不多，核心就是 <code>DynamicObject</code> 提供的动态性，而 <code>DynamicObject</code> 的动态性最终来源于 <code>GroovyObject</code>。篇幅有限就不展开了，大家有兴趣可以自己翻阅源码。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>chance
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://liwenkun.github.io/2023/04/13/2023-04-13-gradle-dsl/" title="Gradle DSL 原理">https://liwenkun.github.io/2023/04/13/2023-04-13-gradle-dsl/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/Gradle/" rel="tag"><i class="fa fa-tag"></i> Gradle</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/11/04/2022-11-04-CM201-crack/" rel="prev" title="移动魔百盒 CM201 CH(长虹代工) 破解方法分享">
+      <i class="fa fa-chevron-left"></i> 移动魔百盒 CM201 CH(长虹代工) 破解方法分享
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/09/16/2023-09-16-play-with-vfork/" rel="next" title="vfork 的诡异输出">
+      vfork 的诡异输出 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <script src="https://utteranc.es/client.js"                                     repo="liwenkun/liwenkun.github.io"                                     issue-term="pathname"                                     theme="github-dark"                                     crossorigin="anonymous"                                     async>                                 </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B5%B0%E8%BF%91-Groovy"><span class="nav-number">2.</span> <span class="nav-text">走近 Groovy</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Groovy-%E5%AF%B9%E4%BA%8E%E8%84%9A%E6%9C%AC%E7%9A%84%E6%94%AF%E6%8C%81"><span class="nav-number">3.</span> <span class="nav-text">Groovy 对于脚本的支持</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Gradle-%E7%9A%84%E9%AD%94%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">Gradle 的魔法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#DefaultScript"><span class="nav-number">4.1.</span> <span class="nav-text">DefaultScript</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PluginsAwareSript"><span class="nav-number">4.2.</span> <span class="nav-text">PluginsAwareSript</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ProjectScript"><span class="nav-number">4.3.</span> <span class="nav-text">ProjectScript</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BasicScript"><span class="nav-number">4.4.</span> <span class="nav-text">BasicScript</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ScriptDynamicObject"><span class="nav-number">4.5.</span> <span class="nav-text">ScriptDynamicObject</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DefaultProject"><span class="nav-number">4.6.</span> <span class="nav-text">DefaultProject</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ExtensibleDynamicObject"><span class="nav-number">4.7.</span> <span class="nav-text">ExtensibleDynamicObject</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9-Ext-%E9%85%8D%E7%BD%AE%E5%9D%97%E7%9A%84%E6%94%AF%E6%8C%81"><span class="nav-number">4.8.</span> <span class="nav-text">对 Ext 配置块的支持</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9-Extension-%E9%85%8D%E7%BD%AE%E5%9D%97%E7%9A%84%E6%94%AF%E6%8C%81"><span class="nav-number">4.9.</span> <span class="nav-text">对 Extension 配置块的支持</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">5.</span> <span class="nav-text">结语</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Chance"
+      src="https://www.gravatar.com/avatar/95a0f14d3e6b40995a92c41673fd09d4?s=640">
+  <p class="site-author-name" itemprop="name">Chance</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liwenkun" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liwenkun" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i> GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:chance@liwenkun.me" title="E-Mail → mailto:chance@liwenkun.me" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i> E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://ylqhust.github.io/" title="http:&#x2F;&#x2F;ylqhust.github.io" rel="noopener" target="_blank">ylqhust的博客</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Chance</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">280k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:15</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
