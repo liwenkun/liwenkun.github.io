@@ -121,7 +121,7 @@ public interface GroovyObject {
 
 `MetaClass` 代表当前类元数据，它知道当前类有哪些属性，有哪些方法，它的 `getProperty()` 和 `invokeMethod()` 会以反射的方式访问当前类的属性和方法。groovy 脚本可以直接使用 `print*()` 和 `evaluate()` 方法，其原因就是 `Script` 中定义这些方法，借助 `MetaClass `就可以访问它们。
 
-<p class="notice-info">这也是为什么在接下来的 script.groovy 中，可以调用 MyScriptBaseClass 提供的 customPrintln 类的原因。</p>
+<p class="notice-info">这也是为什么在接下来的 script.groovy 中，可以调用 MyScriptBaseClass 提供的 customPrintln() 的原因。</p>
 
 Groovy 脚本的强大之处在于，开发者可以对脚本环境进行定制。
 
