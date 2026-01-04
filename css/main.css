@@ -1257,7 +1257,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #acbb3d;
+  background: #0d1d4b;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -2676,7 +2676,7 @@ ul.breadcrumb li + li:last-child {
   scrollbar-width: thin; /* 可选：thin, auto, none */
 }
 .post-body p {
-  text-align: "start";
+  text-align: start;
 }
 @media (prefers-color-scheme: dark) {
   html {
